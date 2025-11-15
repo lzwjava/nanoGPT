@@ -14,14 +14,14 @@ wandb_project = 'openwebtext'
 wandb_run_name = 'nano-gpt'
 
 dataset = 'openwebtext_local'
-gradient_accumulation_steps = 1
-batch_size = 64
-block_size = 1024 # longer context for token-based model
+gradient_accumulation_steps = 4 # increase for effective batch size while reducing per-iteration memory
+batch_size = 16 # reduced for memory constraints
+block_size = 512 # reduced context length for memory
 
-# GPT model for openwebtext
-n_layer = 12
-n_head = 12
-n_embd = 768
+# GPT model for openwebtext (smaller for limited GPU memory)
+n_layer = 6
+n_head = 6
+n_embd = 384
 dropout = 0.0
 
 learning_rate = 3e-4 # standard for GPT models
