@@ -36,18 +36,38 @@ if __name__ == '__main__':
     with open(txt_file, 'r', encoding='utf-8', errors='ignore') as f:
         # Read the entire file
         full_text = f.read().strip()
-        # Split into documents by double newlines (common separator in webtext datasets)
+
+        # Try to split into documents by double newlines first
         documents = full_text.split('\n\n')
-        for doc in documents:
-            doc = doc.strip()
-            if doc:  # Only add non-empty documents
-                texts.append(doc)
+
+        # If we only got one document, split by single newlines
+        if len(documents) <= 1:
+            documents = full_text.split('\n')
+
+        # If we still only have one document, split by period followed by space
+        if len(documents) <= 1:
+            # Split on period followed by space, then join back sentences
+            sentences = full_text.split('. ')
+            # Group sentences into chunks of ~100 sentences per document
+            chunk_size = 100
+            for i in range(0, len(sentences), chunk_size):
+                chunk = '. '.join(sentences[i:i+chunk_size])
+                if chunk.strip():
+                    texts.append(chunk.strip() + '.')
+        else:
+            # Process documents from double/single newline splits
+            for doc in documents:
+                doc = doc.strip()
+                if doc:  # Only add non-empty documents
+                    texts.append(doc)
+
+        print(f"Created {len(texts)} documents from the text file")
 
     # Create dataset from texts
     dataset = datasets.Dataset.from_dict({'text': texts})
 
     # create train/val split from the 10k examples
-    split_dataset = dataset.train_test_split(test_size=0.1, seed=2357, shuffle=True)
+    split_dataset = dataset.train_test_split(test_size=0.0005, seed=2357, shuffle=True)
     split_dataset['val'] = split_dataset.pop('test') # rename the test split to val
 
     # we now want to tokenize the dataset. first define the encoding function (gpt2 bpe)
@@ -72,16 +92,22 @@ if __name__ == '__main__':
         filename = os.path.join(os.path.dirname(__file__), f'{split}.bin')
         dtype = np.uint16 # (can do since enc.max_token_value == 50256 is < 2**16)
         arr = np.memmap(filename, dtype=dtype, mode='w+', shape=(arr_len,))
-        total_batches = 1024
+
+        # Use adaptive batch size based on dataset size
+        total_batches = min(1024, len(dset))
+        if total_batches < 1024:
+            print(f"Using {total_batches} batches for {split} dataset (size: {len(dset)})")
 
         idx = 0
         for batch_idx in tqdm(range(total_batches), desc=f'writing {filename}'):
-            # Batch together samples for faster write
-            batch = dset.shard(num_shards=total_batches, index=batch_idx, contiguous=True).with_format('numpy')
-            arr_batch = np.concatenate(batch['ids'])
-            # Write into mmap
-            arr[idx : idx + len(arr_batch)] = arr_batch
-            idx += len(arr_batch)
+            # Only process if this batch index is valid for the dataset size
+            if batch_idx < len(dset):
+                # Batch together samples for faster write
+                batch = dset.shard(num_shards=total_batches, index=batch_idx, contiguous=True).with_format('numpy')
+                arr_batch = np.concatenate(batch['ids'])
+                # Write into mmap
+                arr[idx : idx + len(arr_batch)] = arr_batch
+                idx += len(arr_batch)
         arr.flush()
 
     # train.bin is ~17GB, val.bin ~8.5MB
