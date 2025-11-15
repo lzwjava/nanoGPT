@@ -8,6 +8,9 @@ import tiktoken
 from datasets import load_dataset # huggingface datasets
 import datasets
 
+print("HTTP_PROXY:", os.getenv("HTTP_PROXY"))
+print("HTTPS_PROXY:", os.getenv("HTTPS_PROXY"))
+
 # number of workers in .map() call
 # good number to use is ~order number of cpu cores // 2
 num_proc = 8
