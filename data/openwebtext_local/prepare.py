@@ -27,41 +27,21 @@ enc = tiktoken.get_encoding("gpt2")
 datasets.logging.set_verbosity_info()
 
 if __name__ == '__main__':
-    # Download the tar file from Hugging Face Hub
-    print("Downloading openwebtext dataset...")
-    tar_path = hf_hub_download(
-        repo_id="Skylion007/openwebtext",
-        filename="subsets/urlsf_subset00.tar",
-        local_dir="./openwebtext",
-        repo_type="dataset"
-    )
-
-    # Extract the tar file
-    print("Extracting tar file...")
-    extract_dir = "./openwebtext_extracted"
-    os.makedirs(extract_dir, exist_ok=True)
-
-    with tarfile.open(tar_path, 'r') as tar:
-        tar.extractall(extract_dir)
-
-    # Load text files from extracted content
-    print("Loading text files...")
-    text_files = []
-    for root, dirs, files in os.walk(extract_dir):
-        for file in files:
-            if file.endswith('.txt'):
-                text_files.append(os.path.join(root, file))
-
-    # Take only first 10,000 files for faster processing
-    text_files = text_files[:10000]
+    # Read the local openwebtext.txt file
+    txt_file = os.path.join(os.path.dirname(__file__), 'openwebtext.txt')
+    print(f"Reading from local file: {txt_file}")
 
     # Read the text content
     texts = []
-    for file_path in tqdm(text_files, desc="Reading text files"):
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-            text = f.read().strip()
-            if text:  # Only add non-empty texts
-                texts.append(text)
+    with open(txt_file, 'r', encoding='utf-8', errors='ignore') as f:
+        # Read the entire file
+        full_text = f.read().strip()
+        # Split into documents by double newlines (common separator in webtext datasets)
+        documents = full_text.split('\n\n')
+        for doc in documents:
+            doc = doc.strip()
+            if doc:  # Only add non-empty documents
+                texts.append(doc)
 
     # Create dataset from texts
     dataset = datasets.Dataset.from_dict({'text': texts})
