@@ -6,6 +6,7 @@ from tqdm import tqdm
 import numpy as np
 import tiktoken
 from datasets import load_dataset # huggingface datasets
+import datasets
 
 # number of workers in .map() call
 # good number to use is ~order number of cpu cores // 2
@@ -17,6 +18,8 @@ num_proc = 8
 num_proc_load_dataset = num_proc
 
 enc = tiktoken.get_encoding("gpt2")
+
+datasets.logging.set_verbosity_info()
 
 if __name__ == '__main__':
     # load only first 10,000 examples for faster processing and smaller dataset
