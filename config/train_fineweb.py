@@ -1,4 +1,4 @@
-out_dir = 'out-fineweb-single-parquet'
+out_dir = 'out-fineweb'
 eval_interval = 500       # Evaluate more often on small data
 eval_iters = 200
 log_interval = 100         # Log more frequently
