@@ -1,7 +1,7 @@
 # train on openwebtext dataset
 # uses data prepared by data/openwebtext_local/prepare.py
 
-out_dir = 'out-wikipedia'
+out_dir = 'out-fineweb'
 eval_interval = 500 # evaluate less frequently on larger dataset
 eval_iters = 200
 log_interval = 100 # don't print too often
@@ -10,7 +10,7 @@ log_interval = 100 # don't print too often
 always_save_checkpoint = False
 
 wandb_log = False # override via command line if you like
-wandb_project = 'wikipedia'
+wandb_project = 'fineweb'
 wandb_run_name = 'nano-gpt'
 
 dataset = 'fineweb'
@@ -26,7 +26,7 @@ dropout = 0.0
 
 learning_rate = 3e-4 # standard for GPT models
 max_iters = 20000
-lr_decay_iters = 20000 # make equal to max_iters usually
+lr_decay_iters = 20000
 min_lr = 3e-5 # learning_rate / 10 usually
 beta2 = 0.99 # standard for GPT models
 

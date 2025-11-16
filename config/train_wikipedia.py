@@ -22,7 +22,7 @@ block_size = 512 # reduced context length for memory
 n_layer = 6
 n_head = 6
 n_embd = 384
-dropout = 0.0
+dropout = 0.2
 
 learning_rate = 3e-4 # standard for GPT models
 max_iters = 20000
