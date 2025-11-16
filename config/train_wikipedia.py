@@ -1,7 +1,7 @@
 # train on openwebtext dataset
 # uses data prepared by data/openwebtext_local/prepare.py
 
-out_dir = 'out-openwebtext'
+out_dir = 'out-wikipedia'
 eval_interval = 500 # evaluate less frequently on larger dataset
 eval_iters = 200
 log_interval = 100 # don't print too often
@@ -10,7 +10,7 @@ log_interval = 100 # don't print too often
 always_save_checkpoint = False
 
 wandb_log = False # override via command line if you like
-wandb_project = 'openwebtext'
+wandb_project = 'wikipedia'
 wandb_run_name = 'nano-gpt'
 
 dataset = 'openwebtext_local'
