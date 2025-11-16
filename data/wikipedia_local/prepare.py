@@ -28,7 +28,7 @@ datasets.logging.set_verbosity_info()
 
 if __name__ == '__main__':
     # Read the local openwebtext.txt file
-    txt_file = os.path.join(os.path.dirname(__file__), 'openwebtext.txt')
+    txt_file = os.path.join(os.path.dirname(__file__), 'traintext_wikipedia.txt')
     print(f"Reading from local file: {txt_file}")
 
     # Read the text content
