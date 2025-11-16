@@ -13,7 +13,7 @@ wandb_log = False # override via command line if you like
 wandb_project = 'wikipedia'
 wandb_run_name = 'nano-gpt'
 
-dataset = 'openwebtext_local'
+dataset = 'wikipedia_local'
 gradient_accumulation_steps = 4 # increase for effective batch size while reducing per-iteration memory
 batch_size = 16 # reduced for memory constraints
 block_size = 512 # reduced context length for memory
