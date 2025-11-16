@@ -27,8 +27,8 @@ enc = tiktoken.get_encoding("gpt2")
 datasets.logging.set_verbosity_info()
 
 if __name__ == '__main__':
-    # Read the local openwebtext.txt file
-    txt_file = os.path.join(os.path.dirname(__file__), 'traintext_wikipedia.txt')
+    # Read the local fineweb.txt file
+    txt_file = os.path.join(os.path.dirname(__file__), 'train_fineweb.txt')
     print(f"Reading from local file: {txt_file}")
 
     # Read the text content
