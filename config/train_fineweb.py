@@ -1,37 +1,31 @@
-# train on openwebtext dataset
-# uses data prepared by data/openwebtext_local/prepare.py
-
-out_dir = 'out-fineweb'
-eval_interval = 500 # evaluate less frequently on larger dataset
+out_dir = 'out-fineweb-single-parquet'
+eval_interval = 500       # Evaluate more often on small data
 eval_iters = 200
-log_interval = 100 # don't print too often
+log_interval = 100         # Log more frequently
+always_save_checkpoint = True
 
-# save checkpoint when val improves
-always_save_checkpoint = False
-
-wandb_log = False # override via command line if you like
+wandb_log = False          # Optional
 wandb_project = 'fineweb'
-wandb_run_name = 'nano-gpt'
+wandb_run_name = '125M-single-parquet-4070'
 
-dataset = 'fineweb'
-gradient_accumulation_steps = 4 # increase for effective batch size while reducing per-iteration memory
-batch_size = 16 # reduced for memory constraints
-block_size = 512 # reduced context length for memory
+dataset = 'fineweb'       # Assumes you adapted prepare.py for your single file
+gradient_accumulation_steps = 32     # Effective batch size: 16 * 32 = 512 sequences
+batch_size = 16
+block_size = 1024                    # Matches FineWeb's processing
 
-# GPT model for openwebtext (smaller for limited GPU memory)
-n_layer = 6
-n_head = 6
-n_embd = 384
-dropout = 0.0
+# Model (~125M parameters) – perfect for 12 GB VRAM
+n_layer = 12
+n_head = 12
+n_embd = 512
+dropout = 0.0                        # Add 0.1 if overfitting
+learning_rate = 5e-4                 # Slightly lower for smaller data
+max_iters = 6000                     # ~3B tokens seen (adjust up to 10000 if loss keeps dropping)
+warmup_iters = 500                   # Shorter warmup
+lr_decay_iters = 6000
+min_lr = 5e-5
+beta2 = 0.99
 
-learning_rate = 3e-4 # standard for GPT models
-max_iters = 20000
-lr_decay_iters = 20000
-min_lr = 3e-5 # learning_rate / 10 usually
-beta2 = 0.99 # standard for GPT models
-
-warmup_iters = 2000 # more important for larger models
-
-# on macbook also add
-# device = 'cpu'  # run on cpu only
-# compile = False # do not torch compile the model
+# Extras for speed/stability
+compile = True            # PyTorch compile for 20–30% faster training
+bias = False              # Like LLaMA/Mistral
+weight_decay = 0.1
