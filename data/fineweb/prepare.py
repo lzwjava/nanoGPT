@@ -6,40 +6,59 @@ import numpy as np
 import tiktoken
 
 enc = tiktoken.get_encoding("gpt2")
+CHUNK_SIZE = 10_000_000  # characters per chunk
+VAL_RATIO = 0.0005
+
+def process_file(input_path: str, train_bin: str, val_bin: str, val_ratio=VAL_RATIO):
+    temp_train = train_bin + '.tmp'
+    temp_val = val_bin + '.tmp'
+
+    total_tokens = 0
+    val_tokens_written = 0
+    val_target = None  # we decide it after first pass or approximate
+
+    with open(input_path, "r", encoding="utf-8", errors='ignore') as f, \
+         open(temp_train, "wb") as train_f, \
+         open(temp_val, "wb") as val_f:
+
+        while True:
+            chunk = f.read(CHUNK_SIZE)
+            if not chunk:
+                break
+            tokens = enc.encode_ordinary(chunk)
+            tokens_u16 = np.array(tokens, dtype=np.uint16)
+
+            total_tokens += len(tokens_u16)
+
+            # Approximate validation split on-the-fly (good enough)
+            if val_target is None and total_tokens > 10_000_000:
+                val_target = int(total_tokens * val_ratio / (1 - val_ratio))
+
+            if val_tokens_written < val_target:
+                split_point = min(len(tokens_u16), val_target - val_tokens_written)
+                val_f.write(tokens_u16[:split_point].tobytes())
+                train_f.write(tokens_u16[split_point:].tobytes())
+                val_tokens_written += split_point
+            else:
+                train_f.write(tokens_u16.tobytes())
+
+            print(f"Processed {total_tokens/1e6:.1f}M tokens")
+
+    # Rename temp files
+    os.rename(temp_train, train_bin)
+    os.rename(temp_val, val_bin)
+    print(f"Done! Total ≈ {total_tokens/1e9:.2f}B tokens")
+    print(f"train.bin and val.bin ready (no RAM explosion)")
 
 if __name__ == '__main__':
     # Read the local fineweb.txt file
     txt_file = os.path.join(os.path.dirname(__file__), 'train_fineweb.txt')
     print(f"Reading from local file: {txt_file}")
 
-    # Use chunked reading for large file
-    chunk_size = 10_000_000  # characters per chunk
-    all_tokens = []
+    train_bin = os.path.join(os.path.dirname(__file__), 'train.bin')
+    val_bin = os.path.join(os.path.dirname(__file__), 'val.bin')
 
-    with open(txt_file, "r", encoding="utf-8", errors='ignore') as f:
-        while True:
-            chunk = f.read(chunk_size)
-            if not chunk:
-                break
-            tokens = enc.encode_ordinary(chunk)
-            all_tokens.extend(tokens)
-            print(f"Tokenized so far: {len(all_tokens)/1e6:.1f}M tokens")
-
-    # Convert to numpy array
-    all_tokens = np.array(all_tokens, dtype=np.uint16)
-    print(f"Total tokens: {len(all_tokens)/1e6:.1f}M")
-
-    # Create a simple dataset structure for compatibility
-    # Split into train/val
-    val_size = int(len(all_tokens) * 0.0005)
-    train_tokens = all_tokens[val_size:]
-    val_tokens = all_tokens[:val_size]
-
-    # Store as binary files directly
-    for split_name, tokens in [('train', train_tokens), ('val', val_tokens)]:
-        filename = os.path.join(os.path.dirname(__file__), f'{split_name}.bin')
-        tokens.tofile(filename)
-        print(f"Saved {split_name}: {len(tokens)/1e6:.1f}M tokens to {filename}")
+    process_file(txt_file, train_bin, val_bin)
 
     print("Processing complete!")
 
