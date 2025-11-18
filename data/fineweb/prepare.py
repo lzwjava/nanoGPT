@@ -2,6 +2,7 @@
 # https://github.com/HazyResearch/flash-attention/blob/main/training/src/datamodules/language_modeling_hf.py
 
 import os
+import argparse
 import numpy as np
 import tiktoken
 
@@ -9,19 +10,25 @@ enc = tiktoken.get_encoding("gpt2")
 CHUNK_SIZE = 10_000_000  # characters per chunk
 VAL_RATIO = 0.0005
 
-def process_file(input_path: str, train_bin: str, val_bin: str, val_ratio=VAL_RATIO):
+def process_file(input_path: str, train_bin: str, val_bin: str, val_ratio=VAL_RATIO, max_chunks=None):
     temp_train = train_bin + '.tmp'
     temp_val = val_bin + '.tmp'
 
     total_tokens = 0
     val_tokens_written = 0
     val_target = 0  # we decide it after first pass or approximate
+    chunks_processed = 0
 
     with open(input_path, "r", encoding="utf-8", errors='ignore') as f, \
          open(temp_train, "wb") as train_f, \
          open(temp_val, "wb") as val_f:
 
         while True:
+            # Check if we should stop processing chunks
+            if max_chunks is not None and chunks_processed >= max_chunks:
+                print(f"Reached max chunks limit: {max_chunks}")
+                break
+
             chunk = f.read(CHUNK_SIZE)
             if not chunk:
                 break
@@ -29,6 +36,7 @@ def process_file(input_path: str, train_bin: str, val_bin: str, val_ratio=VAL_RA
             tokens_u16 = np.array(tokens, dtype=np.uint16)
 
             total_tokens += len(tokens_u16)
+            chunks_processed += 1
 
             # Approximate validation split on-the-fly (good enough)
             if val_target == 0 and total_tokens > 10_000_000:
@@ -42,7 +50,7 @@ def process_file(input_path: str, train_bin: str, val_bin: str, val_ratio=VAL_RA
             else:
                 train_f.write(tokens_u16.tobytes())
 
-            print(f"Processed {total_tokens/1e6:.1f}M tokens")
+            print(f"Processed {total_tokens/1e6:.1f}M tokens (chunk {chunks_processed})")
 
     # Rename temp files
     os.rename(temp_train, train_bin)
@@ -51,14 +59,20 @@ def process_file(input_path: str, train_bin: str, val_bin: str, val_ratio=VAL_RA
     print(f"train.bin and val.bin ready (no RAM explosion)")
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Process FineWeb data into binary format')
+    parser.add_argument('--n', type=int, default=None, help='Maximum number of chunks to process (default: unlimited)')
+    args = parser.parse_args()
+
     # Read the local fineweb.txt file
     txt_file = os.path.join(os.path.dirname(__file__), 'train_fineweb.txt')
     print(f"Reading from local file: {txt_file}")
+    if args.n is not None:
+        print(f"Processing at most {args.n} chunks")
 
     train_bin = os.path.join(os.path.dirname(__file__), 'train.bin')
     val_bin = os.path.join(os.path.dirname(__file__), 'val.bin')
 
-    process_file(txt_file, train_bin, val_bin)
+    process_file(txt_file, train_bin, val_bin, max_chunks=args.n)
 
     print("Processing complete!")
 
