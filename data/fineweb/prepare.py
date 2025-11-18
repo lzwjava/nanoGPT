@@ -13,7 +13,7 @@ if __name__ == '__main__':
     print(f"Reading from local file: {txt_file}")
 
     # Use chunked reading for large file
-    chunk_size = 1_000_000  # characters per chunk
+    chunk_size = 10_000_000  # characters per chunk
     all_tokens = []
 
     with open(txt_file, "r", encoding="utf-8", errors='ignore') as f:
