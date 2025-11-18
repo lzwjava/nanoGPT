@@ -15,7 +15,7 @@ def process_file(input_path: str, train_bin: str, val_bin: str, val_ratio=VAL_RA
 
     total_tokens = 0
     val_tokens_written = 0
-    val_target = None  # we decide it after first pass or approximate
+    val_target = 0  # we decide it after first pass or approximate
 
     with open(input_path, "r", encoding="utf-8", errors='ignore') as f, \
          open(temp_train, "wb") as train_f, \
@@ -31,10 +31,10 @@ def process_file(input_path: str, train_bin: str, val_bin: str, val_ratio=VAL_RA
             total_tokens += len(tokens_u16)
 
             # Approximate validation split on-the-fly (good enough)
-            if val_target is None and total_tokens > 10_000_000:
+            if val_target == 0 and total_tokens > 10_000_000:
                 val_target = int(total_tokens * val_ratio / (1 - val_ratio))
 
-            if val_tokens_written < val_target:
+            if val_target > 0 and val_tokens_written < val_target:
                 split_point = min(len(tokens_u16), val_target - val_tokens_written)
                 val_f.write(tokens_u16[:split_point].tobytes())
                 train_f.write(tokens_u16[split_point:].tobytes())

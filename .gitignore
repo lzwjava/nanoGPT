@@ -11,3 +11,4 @@ input.txt
 env/
 venv/
 train_*.txt
+*.bin.tmp
