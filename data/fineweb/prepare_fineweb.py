@@ -1,9 +1,8 @@
 """
 FineWeb-Edu dataset (for srs pretraining)
-https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu
-Downloads and tokenizes the data and saves data shards to disk.
+Reads from local train_fineweb.txt file and tokenizes the data, saving data shards to disk.
 Run simply as:
-$ python fineweb.py
+$ python prepare_fineweb.py
 Will save shards to the local directory "edu_fineweb10B".
 """
 
@@ -11,12 +10,10 @@ import os
 import multiprocessing as mp
 import numpy as np
 import tiktoken
-from datasets import load_dataset # pip install datasets
 from tqdm import tqdm # pip install tqdm
 
 # ------------------------------------------
-local_dir = "edu_fineweb10B"
-remote_name = "sample-10BT"
+local_dir = "fineweb"
 shard_size = int(1e8) # 100M tokens per shard, total of 100 shards
 
 # create the cache the local directory if it doesn't exist yet
@@ -26,6 +23,22 @@ os.makedirs(DATA_CACHE_DIR, exist_ok=True)
 # read the local fineweb.txt file
 txt_file = os.path.join(os.path.dirname(__file__), 'train_fineweb.txt')
 print(f"Reading from local file: {txt_file}")
+
+# Create an iterator that yields documents like the HuggingFace dataset
+class DocumentIterator:
+    def __init__(self, txt_file, chunk_size=10000):
+        self.txt_file = txt_file
+        self.chunk_size = chunk_size
+        
+    def __iter__(self):
+        with open(self.txt_file, "r", encoding="utf-8", errors='ignore') as f:
+            while True:
+                chunk = f.read(self.chunk_size)
+                if not chunk:
+                    break
+                yield {"text": chunk}
+
+fw = DocumentIterator(txt_file)
 
 # init the tokenizer
 enc = tiktoken.get_encoding("gpt2")
