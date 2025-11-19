@@ -9,8 +9,8 @@ wandb_project = 'fineweb'
 wandb_run_name = 'fineweb'
 
 dataset = 'fineweb'       # Assumes you adapted prepare.py for your single file
-gradient_accumulation_steps = 32     # Effective batch size: 16 * 32 = 512 sequences
-batch_size = 16
+gradient_accumulation_steps = 64     # Effective batch size: 16 * 32 = 512 sequences
+batch_size = 8
 block_size = 1024                    # Matches FineWeb's processing
 
 # Model (~125M parameters) – perfect for 12 GB VRAM
