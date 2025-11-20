@@ -19,9 +19,9 @@ n_head = 12
 n_embd = 768
 dropout = 0.0                        # Add 0.1 if overfitting
 learning_rate = 3e-4                # Slightly lower for smaller data
-max_iters = 6000                     # ~3B tokens seen (adjust up to 10000 if loss keeps dropping)
+max_iters = 12000                     # ~3B tokens seen (adjust up to 10000 if loss keeps dropping)
 warmup_iters = 500                   # Shorter warmup
-lr_decay_iters = 6000
+lr_decay_iters = 12000
 min_lr = 3e-5
 beta2 = 0.99
 
