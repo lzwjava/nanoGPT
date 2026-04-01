@@ -23,9 +23,9 @@ n_head = 25
 n_embd = 1600
 dropout = 0.0
 learning_rate = 3e-4
-max_iters = 100000       # ~670B tokens with this config — good for 10B FineWeb
+max_iters = 10000       # ~6.7B tokens with this config — good for 10B FineWeb
 warmup_iters = 500
-lr_decay_iters = 100000
+lr_decay_iters = 10000
 min_lr = 3e-5
 beta2 = 0.99
 
