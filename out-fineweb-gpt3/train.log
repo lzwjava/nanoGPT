@@ -1152,3 +1152,16 @@ iter 14900: loss 3.2704, time 11114.84ms, mfu 12.82%
 iter 14920: loss 3.2753, time 11108.64ms, mfu 12.83%
 iter 14940: loss 3.2883, time 11113.93ms, mfu 12.84%
 iter 14960: loss 2.8213, time 11113.72ms, mfu 12.85%
+iter 14980: loss 3.1622, time 11112.93ms, mfu 12.86%
+step 15000: train loss 3.0510, val loss 3.0259
+saving checkpoint to out-fineweb-gpt3
+iter 15000: loss 2.7538, time 29300.41ms, mfu 12.06%
+iter 15020: loss 3.1755, time 11114.04ms, mfu 12.15%
+iter 15040: loss 2.7540, time 11113.21ms, mfu 12.23%
+iter 15060: loss 2.9684, time 11113.54ms, mfu 12.30%
+iter 15080: loss 3.0807, time 11113.97ms, mfu 12.36%
+iter 15100: loss 3.0036, time 11112.53ms, mfu 12.42%
+iter 15120: loss 3.1230, time 11113.35ms, mfu 12.47%
+iter 15140: loss 2.8783, time 11115.20ms, mfu 12.51%
+iter 15160: loss 3.0867, time 11113.64ms, mfu 12.55%
+iter 15180: loss 3.0434, time 11114.03ms, mfu 12.59%
