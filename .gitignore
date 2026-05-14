@@ -8,7 +8,6 @@ __pycache__/
 *.pt
 *.pyc
 *.npy
-*.log
 input.txt
 env/
 venv/
