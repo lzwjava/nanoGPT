@@ -51,10 +51,13 @@ class CausalSelfAttention(nn.Module):
                                         .view(1, 1, config.block_size, config.block_size))
 
     def forward(self, x):
+        # x: (B, T, C) e.g. (1, 5, 1600) for GPT-2 XL
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
 
         # calculate query, key, values for all heads in batch and move head forward to be the batch dim
+        # c_attn(x): (B, T, 3*C) -> split into 3 of (B, T, C); e.g. each (1, 5, 1600)
         q, k, v  = self.c_attn(x).split(self.n_embd, dim=2)
+        # view: (B, T, nh, hs) -> transpose: (B, nh, T, hs); e.g. (1, 25, 5, 64)
         k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
         q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
@@ -66,17 +69,19 @@ class CausalSelfAttention(nn.Module):
         # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
         if self.flash:
             # efficient attention using Flash Attention CUDA kernels
+            # y: (B, nh, T, hs); e.g. (1, 25, 5, 64)
             y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=self.dropout if self.training else 0, is_causal=True)
         else:
             # manual implementation of attention
-            att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
+            att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1))) # (B, nh, T, T)
             att = att.masked_fill(self.bias[:,:,:T,:T] == 0, float('-inf'))
             att = F.softmax(att, dim=-1)
             att = self.attn_dropout(att)
             y = att @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
+        # transpose: (B, T, nh, hs) -> view: (B, T, C); e.g. (1, 5, 1600)
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
 
-        # output projection
+        # output projection: (B, T, C) -> (B, T, C)
         y = self.resid_dropout(self.c_proj(y))
         return y
 
@@ -91,13 +96,14 @@ class MLP(nn.Module):
         self._shapes_logged = False
 
     def forward(self, x):
+        # x: (B, T, n_embd); e.g. (1, 5, 1600)
         if not self._shapes_logged:
             print(f"[MLP] in: {tuple(x.shape)}")
-        x = self.c_fc(x)
+        x = self.c_fc(x) # (B, T, n_embd) -> (B, T, 4*n_embd); e.g. (1, 5, 6400)
         if not self._shapes_logged:
             print(f"[MLP] after c_fc (4x expand): {tuple(x.shape)}")
-        x = self.gelu(x)
-        x = self.c_proj(x)
+        x = self.gelu(x) # same shape
+        x = self.c_proj(x) # (B, T, 4*n_embd) -> (B, T, n_embd); e.g. (1, 5, 1600)
         if not self._shapes_logged:
             print(f"[MLP] after c_proj (back to n_embd): {tuple(x.shape)}")
             self._shapes_logged = True
@@ -183,28 +189,30 @@ class GPT(nn.Module):
 
     def forward(self, idx, targets=None):
         device = idx.device
+        # idx: (B, T) token ids; e.g. (1, 5)
         b, t = idx.size()
         assert t <= self.config.block_size, f"Cannot forward sequence of length {t}, block size is only {self.config.block_size}"
         pos = torch.arange(0, t, dtype=torch.long, device=device) # shape (t)
 
         # forward the GPT model itself
-        tok_emb = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd)
-        pos_emb = self.transformer.wpe(pos) # position embeddings of shape (t, n_embd)
-        x = self.transformer.drop(tok_emb + pos_emb)
+        tok_emb = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd); e.g. (1, 5, 1600)
+        pos_emb = self.transformer.wpe(pos) # position embeddings of shape (t, n_embd); e.g. (5, 1600), broadcast over batch
+        x = self.transformer.drop(tok_emb + pos_emb) # (b, t, n_embd); e.g. (1, 5, 1600)
 
         if not self._forward_logged:
             print(f"[GPT] idx: {tuple(idx.shape)} | tok_emb: {tuple(tok_emb.shape)} | pos_emb: {tuple(pos_emb.shape)} | x after embed+drop: {tuple(x.shape)}")
 
         for block in self.transformer.h:
-            x = block(x)
-        x = self.transformer.ln_f(x)
+            x = block(x) # (b, t, n_embd) -> (b, t, n_embd) at every layer
+        x = self.transformer.ln_f(x) # (b, t, n_embd)
 
         if targets is not None:
-            # if we are given some desired targets also calculate the loss
-            logits = self.lm_head(x)
+            # training: compute logits at every position
+            logits = self.lm_head(x) # (b, t, vocab_size)
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
         else:
             # inference-time mini-optimization: only forward the lm_head on the very last position
+            # x[:, [-1], :]: (b, 1, n_embd) -> logits: (b, 1, vocab_size); e.g. (1, 1, 50257)
             logits = self.lm_head(x[:, [-1], :]) # note: using list [-1] to preserve the time dim
             loss = None
 
