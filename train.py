@@ -112,11 +112,22 @@ ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torc
 ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=device_type, dtype=ptdtype)
 
 # poor man's data loader
+import glob as _glob
 data_dir = os.path.join('data', dataset)
+shard_dir = globals().get('shard_dir', None)
+if shard_dir is not None:
+    _train_shards = sorted(_glob.glob(os.path.join(shard_dir, 'edufineweb_train_*.npy')))
+    _val_shards = sorted(_glob.glob(os.path.join(shard_dir, 'edufineweb_val_*.npy')))
+    assert _train_shards and _val_shards, f"no shards in {shard_dir}"
+    print(f"[shards] train={len(_train_shards)} val={len(_val_shards)} from {shard_dir}")
 def get_batch(split):
     # We recreate np.memmap every batch to avoid a memory leak, as per
     # https://stackoverflow.com/questions/45132940/numpy-memmap-memory-usage-want-to-iterate-once/61472122#61472122
-    if split == 'train':
+    if shard_dir is not None:
+        shards = _train_shards if split == 'train' else _val_shards
+        path = shards[torch.randint(len(shards), (1,)).item()]
+        data = np.load(path, mmap_mode='r')
+    elif split == 'train':
         data = np.memmap(os.path.join(data_dir, 'train.bin'), dtype=np.uint16, mode='r')
     else:
         data = np.memmap(os.path.join(data_dir, 'val.bin'), dtype=np.uint16, mode='r')
