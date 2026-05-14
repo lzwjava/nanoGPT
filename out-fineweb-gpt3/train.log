@@ -1,0 +1,1154 @@
+Command 'python3.13' not found, did you mean:
+  command 'python3.11' from deb python3.11 (3.11.7-2)
+  command 'python3.12' from deb python3.12 (3.12.3-1ubuntu0.13)
+Try: sudo apt install <deb name>
+Overriding config with config/train_fineweb_gpt3.py:
+out_dir = 'out-fineweb-gpt3'
+shard_dir = '/mnt/data/nanoGPT/data/fineweb/edu_fineweb100B'
+dataset = 'fineweb'
+
+eval_interval = 500
+eval_iters = 100
+log_interval = 20
+always_save_checkpoint = True
+
+wandb_log = False
+wandb_project = 'fineweb-gpt3'
+wandb_run_name = 'gpt2-124M-100B'
+
+# 524,288 tokens / step (4 * 1024 * 128) — micro-batch 4 fits a 12GB 4070
+batch_size = 4
+block_size = 1024
+gradient_accumulation_steps = 128
+
+# GPT-2 124M
+n_layer = 12
+n_head = 12
+n_embd = 768
+dropout = 0.0
+bias = False
+
+learning_rate = 6e-4
+min_lr = 6e-5
+warmup_iters = 715
+max_iters = 19073        # ~10B tokens; bump toward ~190k for full 100B
+lr_decay_iters = 19073
+weight_decay = 0.1
+beta2 = 0.95
+grad_clip = 1.0
+
+compile = True
+
+tokens per iteration will be: 524,288
+[shards] train=1407 val=1 from /mnt/data/nanoGPT/data/fineweb/edu_fineweb100B
+Initializing a new model from scratch
+defaulting to vocab_size of GPT-2 to 50304 (50257 rounded up for efficiency)
+number of parameters: 123.59M
+/mnt/data/nanoGPT/train.py:207: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler(enabled=(dtype == 'float16'))
+num decayed parameter tensors: 50, with 124,354,560 parameters
+num non-decayed parameter tensors: 25, with 19,200 parameters
+using fused AdamW: True
+compiling the model... (takes a ~minute)
+/tmp/tmpt2wndipb/main.c:5:10: fatal error: Python.h: No such file or directory
+    5 | #include <Python.h>
+      |          ^~~~~~~~~~
+compilation terminated.
+Traceback (most recent call last):
+  File "/mnt/data/nanoGPT/train.py", line 275, in <module>
+    losses = estimate_loss()
+             ^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/data/nanoGPT/train.py", line 235, in estimate_loss
+    logits, loss = model(X, Y)
+                   ^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 574, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/convert_frame.py", line 1380, in __call__
+    return self._torchdynamo_orig_callable(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/convert_frame.py", line 1164, in __call__
+    result = self._inner_convert(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/convert_frame.py", line 547, in __call__
+    return _compile(
+           ^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/convert_frame.py", line 986, in _compile
+    guarded_code = compile_inner(code, one_graph, hooks, transform)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/convert_frame.py", line 715, in compile_inner
+    return _compile_inner(code, one_graph, hooks, transform)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_utils_internal.py", line 95, in wrapper_function
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/convert_frame.py", line 750, in _compile_inner
+    out_code = transform_code_object(code, transform)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/bytecode_transformation.py", line 1361, in transform_code_object
+    transformations(instructions, code_options)
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/convert_frame.py", line 231, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/convert_frame.py", line 662, in transform
+    tracer.run()
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/symbolic_convert.py", line 2868, in run
+    super().run()
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/symbolic_convert.py", line 1052, in run
+    while self.step():
+          ^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/symbolic_convert.py", line 962, in step
+    self.dispatch_table[inst.opcode](self, inst)
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/symbolic_convert.py", line 657, in wrapper
+    return handle_graph_break(self, inst, speculation.reason)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/symbolic_convert.py", line 698, in handle_graph_break
+    self.output.compile_subgraph(self, reason=reason)
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/output_graph.py", line 1136, in compile_subgraph
+    self.compile_and_call_fx_graph(
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/output_graph.py", line 1382, in compile_and_call_fx_graph
+    compiled_fn = self.call_user_compiler(gm)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/output_graph.py", line 1432, in call_user_compiler
+    return self._call_user_compiler(gm)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/output_graph.py", line 1483, in _call_user_compiler
+    raise BackendCompilerFailed(self.compiler_fn, e).with_traceback(
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/output_graph.py", line 1462, in _call_user_compiler
+    compiled_fn = compiler_fn(gm, self.example_inputs())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/repro/after_dynamo.py", line 130, in __call__
+    compiled_gm = compiler_fn(gm, example_inputs)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/__init__.py", line 2340, in __call__
+    return compile_fx(model_, inputs_, config_patches=self.config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/compile_fx.py", line 1863, in compile_fx
+    return aot_autograd(
+           ^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/backends/common.py", line 83, in __call__
+    cg = aot_module_simplified(gm, example_inputs, **self.kwargs)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_functorch/aot_autograd.py", line 1155, in aot_module_simplified
+    compiled_fn = dispatch_and_compile()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_functorch/aot_autograd.py", line 1131, in dispatch_and_compile
+    compiled_fn, _ = create_aot_dispatcher_function(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_functorch/aot_autograd.py", line 580, in create_aot_dispatcher_function
+    return _create_aot_dispatcher_function(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_functorch/aot_autograd.py", line 830, in _create_aot_dispatcher_function
+    compiled_fn, fw_metadata = compiler_fn(
+                               ^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_functorch/_aot_autograd/jit_compile_runtime_wrappers.py", line 203, in aot_dispatch_base
+    compiled_fw = compiler(fw_module, updated_flat_args)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_functorch/aot_autograd.py", line 489, in __call__
+    return self.compiler_fn(gm, example_inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/compile_fx.py", line 1741, in fw_compiler_base
+    return inner_compile(
+           ^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/compile_fx.py", line 569, in compile_fx_inner
+    return wrap_compiler_debug(_compile_fx_inner, compiler_name="inductor")(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_dynamo/repro/after_aot.py", line 102, in debug_wrapper
+    inner_compiled_fn = compiler_fn(gm, example_inputs)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/compile_fx.py", line 685, in _compile_fx_inner
+    mb_compiled_graph = fx_codegen_and_compile(
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/compile_fx.py", line 1129, in fx_codegen_and_compile
+    return scheme.codegen_and_compile(gm, example_inputs, inputs_to_check, graph_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/compile_fx.py", line 1044, in codegen_and_compile
+    compiled_fn = graph.compile_to_module().call
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/graph.py", line 2027, in compile_to_module
+    return self._compile_to_module()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/graph.py", line 2033, in _compile_to_module
+    self.codegen_with_cpp_wrapper() if self.cpp_wrapper else self.codegen()
+                                                             ^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/graph.py", line 1968, in codegen
+    self.scheduler.codegen()
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/scheduler.py", line 3477, in codegen
+    return self._codegen()
+           ^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/scheduler.py", line 3554, in _codegen
+    self.get_backend(device).codegen_node(node)
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/codegen/cuda_combined_scheduling.py", line 80, in codegen_node
+    return self._triton_scheduling.codegen_node(node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/codegen/simd.py", line 1219, in codegen_node
+    return self.codegen_node_schedule(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/codegen/simd.py", line 1263, in codegen_node_schedule
+    src_code = kernel.codegen_kernel()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/codegen/triton.py", line 3154, in codegen_kernel
+    **self.inductor_meta_common(),
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/_inductor/codegen/triton.py", line 3013, in inductor_meta_common
+    "backend_hash": torch.utils._triton.triton_hash_with_backend(),
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/utils/_triton.py", line 111, in triton_hash_with_backend
+    backend = triton_backend()
+              ^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/torch/utils/_triton.py", line 103, in triton_backend
+    target = driver.active.get_current_target()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/triton/runtime/driver.py", line 23, in __getattr__
+    self._initialize_obj()
+  File "/home/lzw/.local/lib/python3.11/site-packages/triton/runtime/driver.py", line 20, in _initialize_obj
+    self._obj = self._init_fn()
+                ^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/triton/runtime/driver.py", line 9, in _create_driver
+    return actives[0]()
+           ^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/triton/backends/nvidia/driver.py", line 450, in __init__
+    self.utils = CudaUtils()  # TODO: make static
+                 ^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/triton/backends/nvidia/driver.py", line 80, in __init__
+    mod = compile_module_from_src(Path(os.path.join(dirname, "driver.c")).read_text(), "cuda_utils")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/triton/backends/nvidia/driver.py", line 57, in compile_module_from_src
+    so = _build(name, src_path, tmpdir, library_dirs(), include_dir, libraries)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lzw/.local/lib/python3.11/site-packages/triton/runtime/build.py", line 50, in _build
+    ret = subprocess.check_call(cc_cmd)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/subprocess.py", line 413, in check_call
+    raise CalledProcessError(retcode, cmd)
+torch._dynamo.exc.BackendCompilerFailed: backend='inductor' raised:
+CalledProcessError: Command '['/usr/bin/gcc', '/tmp/tmpt2wndipb/main.c', '-O3', '-shared', '-fPIC', '-Wno-psabi', '-o', '/tmp/tmpt2wndipb/cuda_utils.cpython-311-x86_64-linux-gnu.so', '-lcuda', '-L/home/lzw/.local/lib/python3.11/site-packages/triton/backends/nvidia/lib', '-L/lib/x86_64-linux-gnu', '-L/lib/i386-linux-gnu', '-I/home/lzw/.local/lib/python3.11/site-packages/triton/backends/nvidia/include', '-I/tmp/tmpt2wndipb', '-I/usr/include/python3.11']' returned non-zero exit status 1.
+
+Set TORCH_LOGS="+dynamo" and TORCHDYNAMO_VERBOSE=1 for more information
+
+
+You can suppress this exception and fall back to eager by setting:
+    import torch._dynamo
+    torch._dynamo.config.suppress_errors = True
+
+Overriding config with config/train_fineweb_gpt3.py:
+out_dir = 'out-fineweb-gpt3'
+shard_dir = '/mnt/data/nanoGPT/data/fineweb/edu_fineweb100B'
+dataset = 'fineweb'
+
+eval_interval = 500
+eval_iters = 100
+log_interval = 20
+always_save_checkpoint = True
+
+wandb_log = False
+wandb_project = 'fineweb-gpt3'
+wandb_run_name = 'gpt2-124M-100B'
+
+# 524,288 tokens / step (4 * 1024 * 128) — micro-batch 4 fits a 12GB 4070
+batch_size = 4
+block_size = 1024
+gradient_accumulation_steps = 128
+
+# GPT-2 124M
+n_layer = 12
+n_head = 12
+n_embd = 768
+dropout = 0.0
+bias = False
+
+learning_rate = 6e-4
+min_lr = 6e-5
+warmup_iters = 715
+max_iters = 19073        # ~10B tokens; bump toward ~190k for full 100B
+lr_decay_iters = 19073
+weight_decay = 0.1
+beta2 = 0.95
+grad_clip = 1.0
+
+compile = True
+
+Overriding: compile = False
+tokens per iteration will be: 524,288
+[shards] train=1407 val=1 from /mnt/data/nanoGPT/data/fineweb/edu_fineweb100B
+Initializing a new model from scratch
+defaulting to vocab_size of GPT-2 to 50304 (50257 rounded up for efficiency)
+number of parameters: 123.59M
+/mnt/data/nanoGPT/train.py:207: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler(enabled=(dtype == 'float16'))
+num decayed parameter tensors: 50, with 124,354,560 parameters
+num non-decayed parameter tensors: 25, with 19,200 parameters
+using fused AdamW: True
+[GPT] idx: (4, 1024) | tok_emb: (4, 1024, 768) | pos_emb: (1024, 768) | x after embed+drop: (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[GPT] x after transformer: (4, 1024, 768) | logits: (4, 1024, 50304)
+step 0: train loss 11.0040, val loss 11.0031
+iter 0: loss 11.0075, time 17163.81ms, mfu -100.00%
+iter 20: loss 9.5177, time 11078.62ms, mfu 12.97%
+iter 40: loss 8.9527, time 11081.51ms, mfu 12.96%
+iter 60: loss 8.0168, time 11098.58ms, mfu 12.96%
+iter 80: loss 7.6333, time 11099.17ms, mfu 12.96%
+iter 100: loss 7.1459, time 11101.27ms, mfu 12.96%
+iter 120: loss 6.9118, time 11102.88ms, mfu 12.96%
+iter 140: loss 6.6305, time 11103.04ms, mfu 12.95%
+iter 160: loss 6.0530, time 11102.91ms, mfu 12.95%
+iter 180: loss 6.2132, time 11103.07ms, mfu 12.95%
+iter 200: loss 6.9586, time 11103.31ms, mfu 12.95%
+iter 220: loss 6.2252, time 11103.04ms, mfu 12.95%
+iter 240: loss 5.9376, time 11103.75ms, mfu 12.95%
+iter 260: loss 6.2365, time 11103.17ms, mfu 12.95%
+iter 280: loss 6.3571, time 11103.30ms, mfu 12.94%
+iter 300: loss 5.8596, time 11103.03ms, mfu 12.94%
+iter 320: loss 6.0768, time 11103.40ms, mfu 12.94%
+iter 340: loss 5.7773, time 11103.49ms, mfu 12.94%
+iter 360: loss 5.8604, time 11102.93ms, mfu 12.94%
+iter 380: loss 5.7001, time 11102.60ms, mfu 12.94%
+iter 400: loss 5.5129, time 11102.89ms, mfu 12.94%
+iter 420: loss 5.7390, time 11103.08ms, mfu 12.94%
+iter 440: loss 5.2522, time 11104.03ms, mfu 12.94%
+iter 460: loss 5.4331, time 11103.10ms, mfu 12.94%
+iter 480: loss 5.4345, time 11103.07ms, mfu 12.94%
+step 500: train loss 5.2028, val loss 5.2317
+saving checkpoint to out-fineweb-gpt3
+iter 500: loss 5.4241, time 22389.86ms, mfu 12.29%
+iter 520: loss 5.1674, time 11104.07ms, mfu 12.35%
+iter 540: loss 5.4455, time 11120.06ms, mfu 12.41%
+iter 560: loss 5.1649, time 11105.59ms, mfu 12.46%
+iter 580: loss 4.7661, time 11102.68ms, mfu 12.51%
+iter 600: loss 5.0844, time 11103.21ms, mfu 12.55%
+iter 620: loss 4.8476, time 11103.96ms, mfu 12.59%
+iter 640: loss 4.7997, time 11103.28ms, mfu 12.62%
+iter 660: loss 4.3413, time 11103.23ms, mfu 12.66%
+iter 680: loss 4.6676, time 11104.18ms, mfu 12.68%
+iter 700: loss 4.5948, time 11104.82ms, mfu 12.71%
+iter 720: loss 4.5024, time 11105.91ms, mfu 12.73%
+iter 740: loss 4.4261, time 11105.44ms, mfu 12.75%
+iter 760: loss 4.4162, time 11103.39ms, mfu 12.77%
+iter 780: loss 4.4066, time 11106.07ms, mfu 12.79%
+iter 800: loss 4.3374, time 11104.26ms, mfu 12.80%
+iter 820: loss 4.3726, time 11105.71ms, mfu 12.81%
+iter 840: loss 4.3180, time 11107.36ms, mfu 12.83%
+iter 860: loss 4.3137, time 11106.19ms, mfu 12.84%
+iter 880: loss 4.2707, time 11104.90ms, mfu 12.85%
+iter 900: loss 4.1994, time 11104.86ms, mfu 12.86%
+iter 920: loss 4.1560, time 11107.09ms, mfu 12.86%
+iter 940: loss 4.0987, time 11107.95ms, mfu 12.87%
+iter 960: loss 4.0415, time 11105.25ms, mfu 12.88%
+iter 980: loss 4.0867, time 11107.44ms, mfu 12.88%
+step 1000: train loss 4.0389, val loss 4.0375
+saving checkpoint to out-fineweb-gpt3
+iter 1000: loss 3.9763, time 28764.95ms, mfu 12.09%
+iter 1020: loss 3.8975, time 11106.97ms, mfu 12.18%
+iter 1040: loss 4.1593, time 11107.54ms, mfu 12.25%
+iter 1060: loss 3.7229, time 11106.40ms, mfu 12.32%
+iter 1080: loss 4.1876, time 11106.41ms, mfu 12.38%
+iter 1100: loss 3.4746, time 11107.44ms, mfu 12.44%
+iter 1120: loss 3.8573, time 11105.06ms, mfu 12.49%
+iter 1140: loss 4.1025, time 11103.19ms, mfu 12.53%
+iter 1160: loss 3.8605, time 11106.22ms, mfu 12.57%
+iter 1180: loss 3.9018, time 11106.20ms, mfu 12.61%
+iter 1200: loss 3.7560, time 11104.72ms, mfu 12.64%
+iter 1220: loss 4.0241, time 11106.55ms, mfu 12.67%
+iter 1240: loss 3.6957, time 11105.19ms, mfu 12.70%
+iter 1260: loss 3.7452, time 11102.87ms, mfu 12.72%
+iter 1280: loss 3.9200, time 11102.40ms, mfu 12.74%
+iter 1300: loss 4.2200, time 11102.89ms, mfu 12.76%
+iter 1320: loss 4.2683, time 11101.53ms, mfu 12.78%
+iter 1340: loss 3.7682, time 11102.46ms, mfu 12.79%
+iter 1360: loss 3.7106, time 11101.11ms, mfu 12.81%
+iter 1380: loss 3.9796, time 11100.95ms, mfu 12.82%
+iter 1400: loss 3.8264, time 11101.67ms, mfu 12.83%
+iter 1420: loss 3.6936, time 11101.19ms, mfu 12.84%
+iter 1440: loss 3.5960, time 11092.91ms, mfu 12.85%
+iter 1460: loss 3.5446, time 11093.87ms, mfu 12.86%
+iter 1480: loss 3.9203, time 11096.38ms, mfu 12.87%
+step 1500: train loss 3.7496, val loss 3.7695
+saving checkpoint to out-fineweb-gpt3
+iter 1500: loss 3.3868, time 29263.96ms, mfu 12.08%
+iter 1520: loss 3.5390, time 11105.65ms, mfu 12.16%
+iter 1540: loss 3.7120, time 11107.19ms, mfu 12.24%
+iter 1560: loss 3.9702, time 11106.73ms, mfu 12.31%
+iter 1580: loss 3.7340, time 11104.99ms, mfu 12.37%
+iter 1600: loss 3.8646, time 11096.56ms, mfu 12.43%
+iter 1620: loss 3.6154, time 11102.02ms, mfu 12.48%
+iter 1640: loss 3.9821, time 11106.41ms, mfu 12.52%
+iter 1660: loss 3.4487, time 11106.16ms, mfu 12.57%
+iter 1680: loss 3.7052, time 11105.92ms, mfu 12.60%
+iter 1700: loss 3.7787, time 11103.44ms, mfu 12.64%
+iter 1720: loss 3.5344, time 11105.29ms, mfu 12.67%
+iter 1740: loss 3.3712, time 11106.46ms, mfu 12.69%
+iter 1760: loss 3.5659, time 11107.53ms, mfu 12.72%
+iter 1780: loss 3.6061, time 11104.47ms, mfu 12.74%
+iter 1800: loss 3.6346, time 11105.64ms, mfu 12.76%
+iter 1820: loss 3.6876, time 11107.98ms, mfu 12.77%
+iter 1840: loss 3.7362, time 11109.04ms, mfu 12.79%
+iter 1860: loss 3.3699, time 11109.67ms, mfu 12.80%
+iter 1880: loss 3.6679, time 11109.77ms, mfu 12.82%
+iter 1900: loss 3.6894, time 11110.22ms, mfu 12.83%
+iter 1920: loss 3.9500, time 11110.25ms, mfu 12.84%
+iter 1940: loss 3.8952, time 11109.57ms, mfu 12.85%
+iter 1960: loss 3.8266, time 11111.84ms, mfu 12.85%
+iter 1980: loss 3.4977, time 11109.66ms, mfu 12.86%
+step 2000: train loss 3.5729, val loss 3.5718
+saving checkpoint to out-fineweb-gpt3
+iter 2000: loss 3.3845, time 29088.35ms, mfu 12.07%
+iter 2020: loss 3.4806, time 11112.10ms, mfu 12.16%
+iter 2040: loss 3.2729, time 11110.01ms, mfu 12.23%
+iter 2060: loss 3.5554, time 11112.47ms, mfu 12.30%
+iter 2080: loss 4.0390, time 11111.24ms, mfu 12.36%
+iter 2100: loss 3.4580, time 11110.64ms, mfu 12.42%
+iter 2120: loss 3.5537, time 11111.93ms, mfu 12.47%
+iter 2140: loss 3.7020, time 11111.22ms, mfu 12.52%
+iter 2160: loss 3.6329, time 11110.39ms, mfu 12.56%
+iter 2180: loss 3.5134, time 11092.47ms, mfu 12.60%
+iter 2200: loss 3.6076, time 11108.73ms, mfu 12.63%
+iter 2220: loss 4.0397, time 11110.91ms, mfu 12.66%
+iter 2240: loss 3.6576, time 11110.67ms, mfu 12.69%
+iter 2260: loss 3.5095, time 11111.87ms, mfu 12.71%
+iter 2280: loss 3.7829, time 11113.24ms, mfu 12.73%
+iter 2300: loss 3.4026, time 11111.18ms, mfu 12.75%
+iter 2320: loss 3.3433, time 11111.47ms, mfu 12.77%
+iter 2340: loss 3.2945, time 11112.42ms, mfu 12.78%
+iter 2360: loss 3.5047, time 11111.03ms, mfu 12.80%
+iter 2380: loss 3.3855, time 11111.85ms, mfu 12.81%
+iter 2400: loss 3.7518, time 11111.87ms, mfu 12.82%
+iter 2420: loss 3.4136, time 11111.32ms, mfu 12.83%
+iter 2440: loss 3.2825, time 11111.03ms, mfu 12.84%
+iter 2460: loss 3.4235, time 11112.74ms, mfu 12.85%
+iter 2480: loss 3.3240, time 11111.12ms, mfu 12.86%
+step 2500: train loss 3.5007, val loss 3.4687
+saving checkpoint to out-fineweb-gpt3
+iter 2500: loss 3.6484, time 28797.36ms, mfu 12.07%
+iter 2520: loss 3.3258, time 11113.08ms, mfu 12.16%
+iter 2540: loss 3.5358, time 11112.14ms, mfu 12.23%
+iter 2560: loss 3.2894, time 11111.45ms, mfu 12.30%
+iter 2580: loss 3.7780, time 11111.72ms, mfu 12.37%
+iter 2600: loss 3.4251, time 11112.68ms, mfu 12.42%
+iter 2620: loss 3.5837, time 11114.23ms, mfu 12.47%
+iter 2640: loss 3.2993, time 11111.62ms, mfu 12.52%
+iter 2660: loss 3.5692, time 11112.81ms, mfu 12.56%
+iter 2680: loss 3.4787, time 11111.79ms, mfu 12.59%
+iter 2700: loss 2.7870, time 11112.06ms, mfu 12.63%
+iter 2720: loss 3.6208, time 11112.17ms, mfu 12.66%
+iter 2740: loss 3.3700, time 11110.70ms, mfu 12.68%
+iter 2760: loss 3.2585, time 11112.53ms, mfu 12.71%
+iter 2780: loss 3.3072, time 11112.20ms, mfu 12.73%
+iter 2800: loss 3.5430, time 11112.43ms, mfu 12.75%
+iter 2820: loss 3.1154, time 11112.00ms, mfu 12.77%
+iter 2840: loss 3.5818, time 11112.70ms, mfu 12.78%
+iter 2860: loss 3.4468, time 11112.69ms, mfu 12.80%
+iter 2880: loss 3.4548, time 11111.36ms, mfu 12.81%
+iter 2900: loss 3.4059, time 11112.61ms, mfu 12.82%
+iter 2920: loss 3.2421, time 11112.19ms, mfu 12.83%
+iter 2940: loss 3.5263, time 11111.51ms, mfu 12.84%
+iter 2960: loss 3.4849, time 11112.67ms, mfu 12.85%
+iter 2980: loss 3.3347, time 11113.32ms, mfu 12.86%
+step 3000: train loss 3.4214, val loss 3.4043
+saving checkpoint to out-fineweb-gpt3
+iter 3000: loss 3.3619, time 28979.80ms, mfu 12.07%
+iter 3020: loss 3.6291, time 11111.60ms, mfu 12.15%
+iter 3040: loss 3.1728, time 11112.02ms, mfu 12.23%
+iter 3060: loss 3.6344, time 11111.75ms, mfu 12.30%
+iter 3080: loss 3.5644, time 11111.13ms, mfu 12.36%
+iter 3100: loss 3.5799, time 11112.25ms, mfu 12.42%
+iter 3120: loss 3.4277, time 11113.70ms, mfu 12.47%
+iter 3140: loss 3.4028, time 11112.36ms, mfu 12.52%
+iter 3160: loss 3.5339, time 11112.42ms, mfu 12.56%
+iter 3180: loss 3.5289, time 11112.67ms, mfu 12.59%
+iter 3200: loss 3.2705, time 11112.37ms, mfu 12.63%
+iter 3220: loss 3.0364, time 11111.55ms, mfu 12.66%
+iter 3240: loss 3.2671, time 11111.67ms, mfu 12.68%
+iter 3260: loss 3.3517, time 11111.99ms, mfu 12.71%
+iter 3280: loss 3.2543, time 11111.69ms, mfu 12.73%
+iter 3300: loss 3.1931, time 11112.29ms, mfu 12.75%
+iter 3320: loss 3.2917, time 11110.57ms, mfu 12.77%
+iter 3340: loss 3.3179, time 11111.35ms, mfu 12.78%
+iter 3360: loss 3.5646, time 11112.72ms, mfu 12.80%
+iter 3380: loss 4.0512, time 11113.33ms, mfu 12.81%
+iter 3400: loss 3.1705, time 11112.61ms, mfu 12.82%
+iter 3420: loss 3.4244, time 11113.25ms, mfu 12.83%
+iter 3440: loss 3.3801, time 11096.83ms, mfu 12.84%
+iter 3460: loss 3.3364, time 11099.64ms, mfu 12.85%
+iter 3480: loss 3.6721, time 11096.33ms, mfu 12.86%
+step 3500: train loss 3.3973, val loss 3.3432
+saving checkpoint to out-fineweb-gpt3
+iter 3500: loss 3.4127, time 28862.43ms, mfu 12.07%
+iter 3520: loss 3.5814, time 11115.02ms, mfu 12.16%
+iter 3540: loss 3.3297, time 11097.24ms, mfu 12.24%
+iter 3560: loss 3.3143, time 11095.85ms, mfu 12.31%
+iter 3580: loss 3.5875, time 11097.21ms, mfu 12.37%
+iter 3600: loss 3.4418, time 11100.99ms, mfu 12.43%
+iter 3620: loss 3.3299, time 11112.56ms, mfu 12.48%
+iter 3640: loss 3.2437, time 11114.27ms, mfu 12.52%
+iter 3660: loss 3.4839, time 11113.03ms, mfu 12.56%
+iter 3680: loss 3.6750, time 11113.61ms, mfu 12.60%
+iter 3700: loss 3.0116, time 11112.36ms, mfu 12.63%
+iter 3720: loss 3.3661, time 11097.79ms, mfu 12.66%
+iter 3740: loss 2.9917, time 11113.82ms, mfu 12.69%
+iter 3760: loss 3.2404, time 11112.30ms, mfu 12.71%
+iter 3780: loss 3.3291, time 11112.95ms, mfu 12.73%
+iter 3800: loss 3.1956, time 11111.90ms, mfu 12.75%
+iter 3820: loss 3.3019, time 11112.47ms, mfu 12.77%
+iter 3840: loss 3.1889, time 11112.22ms, mfu 12.79%
+iter 3860: loss 3.2634, time 11112.69ms, mfu 12.80%
+iter 3880: loss 3.3993, time 11113.25ms, mfu 12.81%
+iter 3900: loss 3.4564, time 11112.29ms, mfu 12.82%
+iter 3920: loss 3.0817, time 11111.93ms, mfu 12.83%
+iter 3940: loss 2.9859, time 11113.35ms, mfu 12.84%
+iter 3960: loss 3.5203, time 11111.60ms, mfu 12.85%
+iter 3980: loss 3.0515, time 11113.37ms, mfu 12.86%
+step 4000: train loss 3.3486, val loss 3.3454
+saving checkpoint to out-fineweb-gpt3
+iter 4000: loss 3.2640, time 29186.52ms, mfu 12.06%
+iter 4020: loss 2.9421, time 11112.26ms, mfu 12.15%
+iter 4040: loss 3.5136, time 11111.67ms, mfu 12.23%
+iter 4060: loss 3.3455, time 11112.22ms, mfu 12.30%
+iter 4080: loss 3.6653, time 11111.51ms, mfu 12.36%
+iter 4100: loss 3.2735, time 11113.05ms, mfu 12.42%
+iter 4120: loss 3.3990, time 11110.58ms, mfu 12.47%
+iter 4140: loss 3.1200, time 11112.13ms, mfu 12.51%
+iter 4160: loss 3.1326, time 11109.85ms, mfu 12.56%
+iter 4180: loss 3.2837, time 11112.43ms, mfu 12.59%
+iter 4200: loss 3.6507, time 11112.00ms, mfu 12.63%
+iter 4220: loss 3.1547, time 11113.03ms, mfu 12.66%
+iter 4240: loss 3.2189, time 11114.55ms, mfu 12.68%
+iter 4260: loss 3.2159, time 11113.96ms, mfu 12.71%
+iter 4280: loss 3.3318, time 11112.71ms, mfu 12.73%
+iter 4300: loss 3.6661, time 11113.47ms, mfu 12.75%
+iter 4320: loss 3.1488, time 11113.20ms, mfu 12.77%
+iter 4340: loss 3.3991, time 11111.91ms, mfu 12.78%
+iter 4360: loss 3.0845, time 11112.22ms, mfu 12.80%
+iter 4380: loss 3.4123, time 11111.69ms, mfu 12.81%
+iter 4400: loss 3.0367, time 11111.88ms, mfu 12.82%
+iter 4420: loss 3.3953, time 11113.14ms, mfu 12.83%
+iter 4440: loss 3.3588, time 11112.78ms, mfu 12.84%
+iter 4460: loss 3.5337, time 11112.35ms, mfu 12.85%
+iter 4480: loss 3.0274, time 11112.23ms, mfu 12.86%
+step 4500: train loss 3.3377, val loss 3.2967
+saving checkpoint to out-fineweb-gpt3
+iter 4500: loss 3.2830, time 28997.88ms, mfu 12.07%
+iter 4520: loss 3.5196, time 11112.53ms, mfu 12.15%
+iter 4540: loss 3.3273, time 11102.86ms, mfu 12.23%
+iter 4560: loss 3.1539, time 11110.19ms, mfu 12.30%
+iter 4580: loss 3.5553, time 11111.16ms, mfu 12.36%
+iter 4600: loss 3.6843, time 11117.88ms, mfu 12.42%
+iter 4620: loss 3.0256, time 11111.63ms, mfu 12.47%
+iter 4640: loss 3.3036, time 11111.73ms, mfu 12.52%
+iter 4660: loss 3.3630, time 11112.77ms, mfu 12.56%
+iter 4680: loss 3.2116, time 11111.91ms, mfu 12.59%
+iter 4700: loss 3.2582, time 11111.81ms, mfu 12.63%
+iter 4720: loss 3.1210, time 11112.60ms, mfu 12.66%
+iter 4740: loss 3.4995, time 11111.47ms, mfu 12.68%
+iter 4760: loss 3.5376, time 11111.38ms, mfu 12.71%
+iter 4780: loss 3.2114, time 11113.13ms, mfu 12.73%
+iter 4800: loss 3.7661, time 11113.48ms, mfu 12.75%
+iter 4820: loss 3.2210, time 11101.88ms, mfu 12.77%
+iter 4840: loss 3.2469, time 11110.72ms, mfu 12.78%
+iter 4860: loss 3.3168, time 11112.14ms, mfu 12.80%
+iter 4880: loss 3.2192, time 11112.81ms, mfu 12.81%
+iter 4900: loss 3.3497, time 11111.91ms, mfu 12.82%
+iter 4920: loss 3.1758, time 11112.51ms, mfu 12.83%
+iter 4940: loss 3.4445, time 11112.11ms, mfu 12.84%
+iter 4960: loss 3.2675, time 11112.46ms, mfu 12.85%
+iter 4980: loss 3.4434, time 11112.92ms, mfu 12.86%
+step 5000: train loss 3.3107, val loss 3.2596
+saving checkpoint to out-fineweb-gpt3
+iter 5000: loss 3.1666, time 28938.75ms, mfu 12.07%
+iter 5020: loss 3.2436, time 11113.27ms, mfu 12.15%
+iter 5040: loss 3.4942, time 11110.59ms, mfu 12.23%
+iter 5060: loss 3.3779, time 11112.48ms, mfu 12.30%
+iter 5080: loss 3.4110, time 11112.69ms, mfu 12.36%
+iter 5100: loss 3.5911, time 11112.49ms, mfu 12.42%
+iter 5120: loss 3.5511, time 11112.88ms, mfu 12.47%
+iter 5140: loss 3.1991, time 11111.91ms, mfu 12.52%
+iter 5160: loss 3.3061, time 11111.37ms, mfu 12.56%
+iter 5180: loss 3.3951, time 11112.44ms, mfu 12.59%
+iter 5200: loss 3.2645, time 11112.39ms, mfu 12.63%
+iter 5220: loss 3.2813, time 11112.53ms, mfu 12.66%
+iter 5240: loss 3.0113, time 11112.35ms, mfu 12.68%
+iter 5260: loss 3.1333, time 11112.36ms, mfu 12.71%
+iter 5280: loss 3.2755, time 11112.72ms, mfu 12.73%
+iter 5300: loss 3.2066, time 11110.35ms, mfu 12.75%
+iter 5320: loss 3.4020, time 11112.65ms, mfu 12.77%
+iter 5340: loss 3.4005, time 11112.41ms, mfu 12.78%
+iter 5360: loss 3.2900, time 11112.29ms, mfu 12.80%
+iter 5380: loss 3.5006, time 11110.87ms, mfu 12.81%
+iter 5400: loss 3.4351, time 11111.77ms, mfu 12.82%
+iter 5420: loss 3.2654, time 11112.39ms, mfu 12.83%
+iter 5440: loss 3.0829, time 11110.98ms, mfu 12.84%
+iter 5460: loss 3.6569, time 11111.66ms, mfu 12.85%
+iter 5480: loss 3.3618, time 11111.93ms, mfu 12.86%
+step 5500: train loss 3.2735, val loss 3.2581
+saving checkpoint to out-fineweb-gpt3
+iter 5500: loss 3.1941, time 29191.80ms, mfu 12.06%
+iter 5520: loss 3.2110, time 11112.68ms, mfu 12.15%
+iter 5540: loss 3.5782, time 11112.13ms, mfu 12.23%
+iter 5560: loss 3.2610, time 11112.27ms, mfu 12.30%
+iter 5580: loss 3.1090, time 11111.48ms, mfu 12.36%
+iter 5600: loss 3.0781, time 11112.28ms, mfu 12.42%
+iter 5620: loss 3.3018, time 11111.69ms, mfu 12.47%
+iter 5640: loss 2.9808, time 11110.21ms, mfu 12.51%
+iter 5660: loss 3.1404, time 11109.36ms, mfu 12.56%
+iter 5680: loss 3.2644, time 11103.70ms, mfu 12.59%
+iter 5700: loss 2.9339, time 11103.13ms, mfu 12.63%
+iter 5720: loss 3.2656, time 11107.78ms, mfu 12.66%
+iter 5740: loss 3.3842, time 11107.06ms, mfu 12.69%
+iter 5760: loss 3.1282, time 11106.37ms, mfu 12.71%
+iter 5780: loss 2.9491, time 11103.73ms, mfu 12.73%
+iter 5800: loss 3.4283, time 11103.18ms, mfu 12.75%
+iter 5820: loss 3.1360, time 11103.64ms, mfu 12.77%
+iter 5840: loss 3.3448, time 11105.92ms, mfu 12.79%
+iter 5860: loss 3.5768, time 11105.00ms, mfu 12.80%
+iter 5880: loss 3.2295, time 11103.14ms, mfu 12.82%
+iter 5900: loss 3.5791, time 11104.92ms, mfu 12.83%
+iter 5920: loss 3.1459, time 11104.05ms, mfu 12.84%
+iter 5940: loss 3.2398, time 11102.78ms, mfu 12.85%
+iter 5960: loss 2.9360, time 11104.11ms, mfu 12.86%
+iter 5980: loss 3.2488, time 11103.30ms, mfu 12.86%
+step 6000: train loss 3.2340, val loss 3.2473
+saving checkpoint to out-fineweb-gpt3
+iter 6000: loss 3.0887, time 29153.09ms, mfu 12.07%
+iter 6020: loss 3.4802, time 11112.47ms, mfu 12.16%
+iter 6040: loss 3.2901, time 11111.76ms, mfu 12.23%
+iter 6060: loss 3.1496, time 11111.74ms, mfu 12.30%
+iter 6080: loss 3.5588, time 11111.37ms, mfu 12.37%
+iter 6100: loss 3.4160, time 11109.85ms, mfu 12.42%
+iter 6120: loss 3.3194, time 11109.09ms, mfu 12.47%
+iter 6140: loss 3.3365, time 11112.04ms, mfu 12.52%
+iter 6160: loss 3.1617, time 11111.30ms, mfu 12.56%
+iter 6180: loss 3.3725, time 11110.53ms, mfu 12.60%
+iter 6200: loss 3.2808, time 11111.96ms, mfu 12.63%
+iter 6220: loss 3.3169, time 11337.22ms, mfu 12.63%
+iter 6240: loss 3.1823, time 11110.02ms, mfu 12.66%
+iter 6260: loss 3.3747, time 11112.35ms, mfu 12.69%
+iter 6280: loss 3.5221, time 11112.52ms, mfu 12.71%
+iter 6300: loss 3.1988, time 11108.52ms, mfu 12.73%
+iter 6320: loss 3.0507, time 11108.81ms, mfu 12.75%
+iter 6340: loss 3.3377, time 11104.42ms, mfu 12.77%
+iter 6360: loss 3.0119, time 11103.84ms, mfu 12.79%
+iter 6380: loss 3.0982, time 11103.36ms, mfu 12.80%
+iter 6400: loss 3.4854, time 11104.64ms, mfu 12.82%
+iter 6420: loss 3.2864, time 11104.36ms, mfu 12.83%
+iter 6440: loss 3.3582, time 11103.85ms, mfu 12.84%
+iter 6460: loss 3.4166, time 11102.73ms, mfu 12.85%
+iter 6480: loss 2.5795, time 11103.01ms, mfu 12.86%
+step 6500: train loss 3.2553, val loss 3.1745
+saving checkpoint to out-fineweb-gpt3
+iter 6500: loss 3.1357, time 29242.74ms, mfu 12.06%
+iter 6520: loss 3.2184, time 11112.77ms, mfu 12.15%
+iter 6540: loss 3.2596, time 11111.52ms, mfu 12.23%
+iter 6560: loss 3.2746, time 11113.58ms, mfu 12.30%
+iter 6580: loss 3.0980, time 11112.83ms, mfu 12.36%
+iter 6600: loss 3.0718, time 11112.56ms, mfu 12.42%
+iter 6620: loss 3.2438, time 11112.90ms, mfu 12.47%
+iter 6640: loss 3.3228, time 11112.43ms, mfu 12.51%
+iter 6660: loss 3.1623, time 11111.69ms, mfu 12.55%
+iter 6680: loss 3.0663, time 11112.71ms, mfu 12.59%
+iter 6700: loss 2.9071, time 11113.29ms, mfu 12.62%
+iter 6720: loss 3.1251, time 11112.12ms, mfu 12.65%
+iter 6740: loss 3.0020, time 11111.86ms, mfu 12.68%
+iter 6760: loss 3.1886, time 11113.45ms, mfu 12.71%
+iter 6780: loss 3.2109, time 11112.69ms, mfu 12.73%
+iter 6800: loss 3.1404, time 11112.93ms, mfu 12.75%
+iter 6820: loss 3.2320, time 11111.82ms, mfu 12.77%
+iter 6840: loss 3.2948, time 11113.49ms, mfu 12.78%
+iter 6860: loss 3.2327, time 11113.59ms, mfu 12.80%
+iter 6880: loss 3.2674, time 11112.42ms, mfu 12.81%
+iter 6900: loss 3.3417, time 11112.83ms, mfu 12.82%
+iter 6920: loss 3.2732, time 11112.81ms, mfu 12.83%
+iter 6940: loss 3.3680, time 11113.75ms, mfu 12.84%
+iter 6960: loss 3.3479, time 11112.50ms, mfu 12.85%
+iter 6980: loss 3.0815, time 11113.17ms, mfu 12.86%
+step 7000: train loss 3.2187, val loss 3.1802
+saving checkpoint to out-fineweb-gpt3
+iter 7000: loss 3.1668, time 29289.77ms, mfu 12.06%
+iter 7020: loss 3.6069, time 11112.68ms, mfu 12.15%
+iter 7040: loss 3.3993, time 11112.23ms, mfu 12.23%
+iter 7060: loss 3.1185, time 11113.17ms, mfu 12.30%
+iter 7080: loss 3.6272, time 11113.13ms, mfu 12.36%
+iter 7100: loss 3.1770, time 11112.70ms, mfu 12.42%
+iter 7120: loss 3.1482, time 11113.02ms, mfu 12.47%
+iter 7140: loss 3.4751, time 11112.82ms, mfu 12.51%
+iter 7160: loss 3.1693, time 11112.61ms, mfu 12.55%
+iter 7180: loss 3.3440, time 11113.43ms, mfu 12.59%
+iter 7200: loss 2.9636, time 11112.98ms, mfu 12.62%
+iter 7220: loss 3.2783, time 11112.45ms, mfu 12.65%
+iter 7240: loss 3.2224, time 11112.69ms, mfu 12.68%
+iter 7260: loss 3.3822, time 11114.23ms, mfu 12.71%
+iter 7280: loss 3.1222, time 11113.67ms, mfu 12.73%
+iter 7300: loss 3.0575, time 11111.80ms, mfu 12.75%
+iter 7320: loss 3.1193, time 11112.60ms, mfu 12.77%
+iter 7340: loss 2.7961, time 11111.96ms, mfu 12.78%
+iter 7360: loss 3.2680, time 11112.91ms, mfu 12.80%
+iter 7380: loss 3.9920, time 11113.18ms, mfu 12.81%
+iter 7400: loss 2.9088, time 11115.16ms, mfu 12.82%
+iter 7420: loss 3.5605, time 11112.79ms, mfu 12.83%
+iter 7440: loss 2.9700, time 11112.58ms, mfu 12.84%
+iter 7460: loss 3.5366, time 11113.96ms, mfu 12.85%
+iter 7480: loss 3.4873, time 11113.31ms, mfu 12.86%
+step 7500: train loss 3.2002, val loss 3.2123
+saving checkpoint to out-fineweb-gpt3
+iter 7500: loss 2.8936, time 29130.17ms, mfu 12.06%
+iter 7520: loss 2.8698, time 11113.43ms, mfu 12.15%
+iter 7540: loss 2.9607, time 11112.42ms, mfu 12.23%
+iter 7560: loss 3.1382, time 11112.31ms, mfu 12.30%
+iter 7580: loss 3.4386, time 11112.52ms, mfu 12.36%
+iter 7600: loss 3.0620, time 11113.19ms, mfu 12.42%
+iter 7620: loss 3.2278, time 11113.11ms, mfu 12.47%
+iter 7640: loss 3.1758, time 11112.69ms, mfu 12.51%
+iter 7660: loss 3.0187, time 11111.70ms, mfu 12.55%
+iter 7680: loss 3.3582, time 11112.39ms, mfu 12.59%
+iter 7700: loss 3.3433, time 11112.48ms, mfu 12.63%
+iter 7720: loss 3.4268, time 11113.82ms, mfu 12.65%
+iter 7740: loss 3.0465, time 11112.83ms, mfu 12.68%
+iter 7760: loss 2.9986, time 11113.81ms, mfu 12.71%
+iter 7780: loss 3.1546, time 11114.75ms, mfu 12.73%
+iter 7800: loss 2.9216, time 11113.07ms, mfu 12.75%
+iter 7820: loss 3.1328, time 11113.00ms, mfu 12.77%
+iter 7840: loss 3.0907, time 11112.69ms, mfu 12.78%
+iter 7860: loss 2.9693, time 11113.28ms, mfu 12.80%
+iter 7880: loss 3.2447, time 11113.15ms, mfu 12.81%
+iter 7900: loss 3.0770, time 11114.27ms, mfu 12.82%
+iter 7920: loss 3.2990, time 11112.30ms, mfu 12.83%
+iter 7940: loss 3.0785, time 11112.73ms, mfu 12.84%
+iter 7960: loss 3.2001, time 11113.81ms, mfu 12.85%
+iter 7980: loss 3.5708, time 11112.28ms, mfu 12.86%
+step 8000: train loss 3.2315, val loss 3.1705
+saving checkpoint to out-fineweb-gpt3
+iter 8000: loss 2.9624, time 28928.35ms, mfu 12.07%
+iter 8020: loss 3.2233, time 11112.24ms, mfu 12.15%
+iter 8040: loss 3.1620, time 11113.47ms, mfu 12.23%
+iter 8060: loss 3.1513, time 11112.32ms, mfu 12.30%
+iter 8080: loss 3.4041, time 11112.34ms, mfu 12.36%
+iter 8100: loss 2.7749, time 11111.86ms, mfu 12.42%
+iter 8120: loss 3.3793, time 11111.86ms, mfu 12.47%
+iter 8140: loss 3.1761, time 11113.39ms, mfu 12.52%
+iter 8160: loss 3.1611, time 11113.29ms, mfu 12.56%
+iter 8180: loss 3.3880, time 11113.38ms, mfu 12.59%
+iter 8200: loss 3.3738, time 11111.87ms, mfu 12.63%
+iter 8220: loss 2.9961, time 11112.34ms, mfu 12.66%
+iter 8240: loss 2.5516, time 11113.21ms, mfu 12.68%
+iter 8260: loss 3.0243, time 11112.57ms, mfu 12.71%
+iter 8280: loss 3.1612, time 11112.42ms, mfu 12.73%
+iter 8300: loss 3.2214, time 11113.18ms, mfu 12.75%
+iter 8320: loss 3.3975, time 11112.62ms, mfu 12.77%
+iter 8340: loss 3.0445, time 11112.80ms, mfu 12.78%
+iter 8360: loss 2.7542, time 11112.43ms, mfu 12.80%
+iter 8380: loss 3.1064, time 11113.87ms, mfu 12.81%
+iter 8400: loss 3.4922, time 11111.98ms, mfu 12.82%
+iter 8420: loss 2.7800, time 11113.01ms, mfu 12.83%
+iter 8440: loss 3.0347, time 11113.69ms, mfu 12.84%
+iter 8460: loss 2.8299, time 11113.27ms, mfu 12.85%
+iter 8480: loss 3.4448, time 11113.97ms, mfu 12.86%
+step 8500: train loss 3.1569, val loss 3.1556
+saving checkpoint to out-fineweb-gpt3
+iter 8500: loss 3.2237, time 29286.18ms, mfu 12.06%
+iter 8520: loss 3.2912, time 11113.49ms, mfu 12.15%
+iter 8540: loss 3.0934, time 11114.34ms, mfu 12.23%
+iter 8560: loss 3.3041, time 11114.44ms, mfu 12.30%
+iter 8580: loss 3.3051, time 11112.99ms, mfu 12.36%
+iter 8600: loss 3.1586, time 11114.38ms, mfu 12.41%
+iter 8620: loss 3.1511, time 11114.07ms, mfu 12.47%
+iter 8640: loss 3.1400, time 11112.38ms, mfu 12.51%
+iter 8660: loss 3.0922, time 11113.88ms, mfu 12.55%
+iter 8680: loss 3.2611, time 11114.47ms, mfu 12.59%
+iter 8700: loss 3.4049, time 11112.99ms, mfu 12.62%
+iter 8720: loss 3.1787, time 11113.09ms, mfu 12.65%
+iter 8740: loss 2.7958, time 11115.79ms, mfu 12.68%
+iter 8760: loss 3.5011, time 11113.47ms, mfu 12.70%
+iter 8780: loss 3.3654, time 11113.86ms, mfu 12.73%
+iter 8800: loss 3.1000, time 11114.17ms, mfu 12.75%
+iter 8820: loss 3.1364, time 11109.43ms, mfu 12.76%
+iter 8840: loss 3.2593, time 11109.30ms, mfu 12.78%
+iter 8860: loss 3.1890, time 11108.85ms, mfu 12.80%
+iter 8880: loss 3.4064, time 11109.85ms, mfu 12.81%
+iter 8900: loss 3.2671, time 11108.23ms, mfu 12.82%
+iter 8920: loss 3.1477, time 11108.10ms, mfu 12.83%
+iter 8940: loss 2.9424, time 11109.96ms, mfu 12.84%
+iter 8960: loss 2.8784, time 11108.18ms, mfu 12.85%
+iter 8980: loss 3.1855, time 11109.02ms, mfu 12.86%
+step 9000: train loss 3.1455, val loss 3.1083
+saving checkpoint to out-fineweb-gpt3
+iter 9000: loss 3.2286, time 29132.98ms, mfu 12.07%
+iter 9020: loss 3.1844, time 11100.75ms, mfu 12.15%
+iter 9040: loss 3.1712, time 11098.00ms, mfu 12.23%
+iter 9060: loss 2.9973, time 11098.62ms, mfu 12.30%
+iter 9080: loss 3.2006, time 11100.84ms, mfu 12.37%
+iter 9100: loss 3.2592, time 11098.83ms, mfu 12.42%
+iter 9120: loss 2.9443, time 11099.11ms, mfu 12.48%
+iter 9140: loss 2.9714, time 11098.39ms, mfu 12.52%
+iter 9160: loss 2.7280, time 11098.72ms, mfu 12.56%
+iter 9180: loss 3.1343, time 11101.10ms, mfu 12.60%
+iter 9200: loss 3.2500, time 11098.53ms, mfu 12.64%
+iter 9220: loss 3.0661, time 11101.22ms, mfu 12.67%
+iter 9240: loss 3.0464, time 11098.56ms, mfu 12.69%
+iter 9260: loss 3.3225, time 11101.08ms, mfu 12.72%
+iter 9280: loss 3.3431, time 11098.80ms, mfu 12.74%
+iter 9300: loss 3.3369, time 11097.08ms, mfu 12.76%
+iter 9320: loss 3.3412, time 11098.69ms, mfu 12.78%
+iter 9340: loss 3.1092, time 11100.79ms, mfu 12.80%
+iter 9360: loss 3.3461, time 11101.41ms, mfu 12.81%
+iter 9380: loss 3.2002, time 11098.10ms, mfu 12.82%
+iter 9400: loss 3.0225, time 11098.65ms, mfu 12.83%
+iter 9420: loss 3.0836, time 11098.90ms, mfu 12.85%
+iter 9440: loss 3.1190, time 11101.34ms, mfu 12.85%
+iter 9460: loss 2.6946, time 11099.34ms, mfu 12.86%
+iter 9480: loss 3.3341, time 11099.03ms, mfu 12.87%
+step 9500: train loss 3.1253, val loss 3.1423
+saving checkpoint to out-fineweb-gpt3
+iter 9500: loss 3.0689, time 29103.54ms, mfu 12.08%
+iter 9520: loss 3.1673, time 11115.22ms, mfu 12.16%
+iter 9540: loss 3.3317, time 11113.73ms, mfu 12.24%
+iter 9560: loss 3.1507, time 11112.66ms, mfu 12.31%
+iter 9580: loss 3.4224, time 11113.92ms, mfu 12.37%
+iter 9600: loss 3.3441, time 11113.07ms, mfu 12.42%
+iter 9620: loss 2.8414, time 11113.46ms, mfu 12.47%
+iter 9640: loss 3.0875, time 11113.48ms, mfu 12.52%
+iter 9660: loss 2.9449, time 11112.78ms, mfu 12.56%
+iter 9680: loss 3.2701, time 11113.23ms, mfu 12.60%
+iter 9700: loss 3.1956, time 11108.61ms, mfu 12.63%
+iter 9720: loss 3.0054, time 11108.17ms, mfu 12.66%
+iter 9740: loss 3.0358, time 11109.12ms, mfu 12.69%
+iter 9760: loss 3.1556, time 11109.47ms, mfu 12.71%
+iter 9780: loss 3.4162, time 11108.77ms, mfu 12.73%
+iter 9800: loss 3.6486, time 11109.15ms, mfu 12.75%
+iter 9820: loss 3.2288, time 11108.95ms, mfu 12.77%
+iter 9840: loss 3.3888, time 11109.12ms, mfu 12.79%
+iter 9860: loss 3.1152, time 11109.46ms, mfu 12.80%
+iter 9880: loss 3.2324, time 11108.87ms, mfu 12.81%
+iter 9900: loss 3.1940, time 11107.99ms, mfu 12.83%
+iter 9920: loss 3.1237, time 11109.52ms, mfu 12.84%
+iter 9940: loss 2.9283, time 11109.28ms, mfu 12.85%
+iter 9960: loss 2.9353, time 11109.42ms, mfu 12.85%
+iter 9980: loss 3.0755, time 11109.40ms, mfu 12.86%
+step 10000: train loss 3.1422, val loss 3.1121
+saving checkpoint to out-fineweb-gpt3
+iter 10000: loss 3.1740, time 29548.42ms, mfu 12.06%
+iter 10020: loss 3.3061, time 11114.53ms, mfu 12.15%
+iter 10040: loss 3.1924, time 11113.72ms, mfu 12.22%
+iter 10060: loss 3.2600, time 11115.74ms, mfu 12.29%
+iter 10080: loss 2.9917, time 11113.62ms, mfu 12.36%
+iter 10100: loss 3.1050, time 11114.42ms, mfu 12.41%
+iter 10120: loss 3.2320, time 11114.87ms, mfu 12.47%
+iter 10140: loss 3.1605, time 11114.29ms, mfu 12.51%
+iter 10160: loss 3.2501, time 11114.44ms, mfu 12.55%
+iter 10180: loss 3.0214, time 11116.13ms, mfu 12.59%
+iter 10200: loss 3.2559, time 11113.45ms, mfu 12.62%
+iter 10220: loss 3.1669, time 11115.11ms, mfu 12.65%
+iter 10240: loss 3.0906, time 11113.71ms, mfu 12.68%
+iter 10260: loss 3.1276, time 11114.45ms, mfu 12.70%
+iter 10280: loss 3.2706, time 11114.59ms, mfu 12.73%
+iter 10300: loss 3.3708, time 11113.92ms, mfu 12.75%
+iter 10320: loss 3.4287, time 11113.25ms, mfu 12.76%
+iter 10340: loss 3.0400, time 11114.26ms, mfu 12.78%
+iter 10360: loss 3.0929, time 11113.67ms, mfu 12.79%
+iter 10380: loss 3.1384, time 11113.96ms, mfu 12.81%
+iter 10400: loss 3.3380, time 11113.61ms, mfu 12.82%
+iter 10420: loss 3.5048, time 11115.30ms, mfu 12.83%
+iter 10440: loss 2.8825, time 11113.83ms, mfu 12.84%
+iter 10460: loss 3.0811, time 11113.37ms, mfu 12.85%
+iter 10480: loss 3.1405, time 11116.42ms, mfu 12.85%
+step 10500: train loss 3.1182, val loss 3.1356
+saving checkpoint to out-fineweb-gpt3
+iter 10500: loss 3.2397, time 28989.43ms, mfu 12.06%
+iter 10520: loss 3.2197, time 11113.34ms, mfu 12.15%
+iter 10540: loss 3.0751, time 11113.55ms, mfu 12.23%
+iter 10560: loss 3.0152, time 11114.10ms, mfu 12.30%
+iter 10580: loss 3.3629, time 11114.06ms, mfu 12.36%
+iter 10600: loss 2.7572, time 11112.21ms, mfu 12.42%
+iter 10620: loss 3.2710, time 11113.32ms, mfu 12.47%
+iter 10640: loss 2.9109, time 11113.62ms, mfu 12.51%
+iter 10660: loss 3.0261, time 11113.34ms, mfu 12.55%
+iter 10680: loss 3.2421, time 11113.82ms, mfu 12.59%
+iter 10700: loss 2.9670, time 11112.63ms, mfu 12.62%
+iter 10720: loss 3.1339, time 11113.01ms, mfu 12.65%
+iter 10740: loss 2.9455, time 11112.56ms, mfu 12.68%
+iter 10760: loss 2.9566, time 11112.39ms, mfu 12.71%
+iter 10780: loss 3.1051, time 11114.50ms, mfu 12.73%
+iter 10800: loss 2.9015, time 11113.78ms, mfu 12.75%
+iter 10820: loss 3.2739, time 11114.02ms, mfu 12.77%
+iter 10840: loss 3.0268, time 11115.27ms, mfu 12.78%
+iter 10860: loss 2.9359, time 11114.19ms, mfu 12.80%
+iter 10880: loss 3.0835, time 11114.68ms, mfu 12.81%
+iter 10900: loss 3.3398, time 11113.33ms, mfu 12.82%
+iter 10920: loss 3.0691, time 11114.57ms, mfu 12.83%
+iter 10940: loss 3.2530, time 11114.09ms, mfu 12.84%
+iter 10960: loss 3.1332, time 11113.78ms, mfu 12.85%
+iter 10980: loss 2.7533, time 11114.36ms, mfu 12.86%
+step 11000: train loss 3.1382, val loss 3.1043
+saving checkpoint to out-fineweb-gpt3
+iter 11000: loss 3.3215, time 29127.59ms, mfu 12.06%
+iter 11020: loss 3.1954, time 11115.24ms, mfu 12.15%
+iter 11040: loss 3.1591, time 11113.96ms, mfu 12.23%
+iter 11060: loss 3.0696, time 11114.86ms, mfu 12.30%
+iter 11080: loss 3.1477, time 11113.52ms, mfu 12.36%
+iter 11100: loss 2.7727, time 11113.16ms, mfu 12.42%
+iter 11120: loss 3.1884, time 11113.08ms, mfu 12.47%
+iter 11140: loss 3.3439, time 11114.19ms, mfu 12.51%
+iter 11160: loss 3.4660, time 11113.09ms, mfu 12.55%
+iter 11180: loss 2.9861, time 11112.86ms, mfu 12.59%
+iter 11200: loss 3.2291, time 11114.60ms, mfu 12.62%
+iter 11220: loss 2.8321, time 11112.00ms, mfu 12.65%
+iter 11240: loss 3.3340, time 11112.85ms, mfu 12.68%
+iter 11260: loss 3.1377, time 11112.66ms, mfu 12.71%
+iter 11280: loss 3.1845, time 11114.14ms, mfu 12.73%
+iter 11300: loss 3.5296, time 11114.19ms, mfu 12.75%
+iter 11320: loss 3.1507, time 11114.42ms, mfu 12.76%
+iter 11340: loss 3.0219, time 11113.34ms, mfu 12.78%
+iter 11360: loss 3.1235, time 11114.09ms, mfu 12.80%
+iter 11380: loss 3.1169, time 11113.66ms, mfu 12.81%
+iter 11400: loss 2.8781, time 11113.35ms, mfu 12.82%
+iter 11420: loss 3.1350, time 11114.00ms, mfu 12.83%
+iter 11440: loss 3.1538, time 11114.19ms, mfu 12.84%
+iter 11460: loss 3.1274, time 11114.40ms, mfu 12.85%
+iter 11480: loss 2.8108, time 11113.83ms, mfu 12.86%
+step 11500: train loss 3.0911, val loss 3.0830
+saving checkpoint to out-fineweb-gpt3
+iter 11500: loss 3.0376, time 29124.24ms, mfu 12.06%
+iter 11520: loss 3.2402, time 11114.06ms, mfu 12.15%
+iter 11540: loss 2.9895, time 11113.28ms, mfu 12.23%
+iter 11560: loss 3.2041, time 11115.07ms, mfu 12.30%
+iter 11580: loss 3.0650, time 11114.52ms, mfu 12.36%
+iter 11600: loss 3.1572, time 11114.21ms, mfu 12.42%
+iter 11620: loss 3.3016, time 11113.68ms, mfu 12.47%
+iter 11640: loss 3.0733, time 11113.66ms, mfu 12.51%
+iter 11660: loss 2.7975, time 11114.48ms, mfu 12.55%
+iter 11680: loss 3.1839, time 11114.75ms, mfu 12.59%
+iter 11700: loss 3.0294, time 11115.53ms, mfu 12.62%
+iter 11720: loss 3.1414, time 11113.34ms, mfu 12.65%
+iter 11740: loss 3.3267, time 11113.84ms, mfu 12.68%
+iter 11760: loss 3.1395, time 11114.69ms, mfu 12.70%
+iter 11780: loss 3.2922, time 11114.09ms, mfu 12.73%
+iter 11800: loss 3.1049, time 11113.77ms, mfu 12.75%
+iter 11820: loss 3.0602, time 11112.71ms, mfu 12.76%
+iter 11840: loss 3.0211, time 11114.26ms, mfu 12.78%
+iter 11860: loss 3.0889, time 11113.96ms, mfu 12.79%
+iter 11880: loss 3.1875, time 11113.80ms, mfu 12.81%
+iter 11900: loss 3.0436, time 11114.08ms, mfu 12.82%
+iter 11920: loss 3.0552, time 11114.14ms, mfu 12.83%
+iter 11940: loss 3.2415, time 11113.64ms, mfu 12.84%
+iter 11960: loss 3.2627, time 11114.80ms, mfu 12.85%
+iter 11980: loss 3.0372, time 11112.98ms, mfu 12.86%
+step 12000: train loss 3.1166, val loss 3.0866
+saving checkpoint to out-fineweb-gpt3
+iter 12000: loss 3.0665, time 29055.17ms, mfu 12.06%
+iter 12020: loss 2.9546, time 11114.35ms, mfu 12.15%
+iter 12040: loss 3.0948, time 11114.10ms, mfu 12.23%
+iter 12060: loss 2.7666, time 11114.75ms, mfu 12.30%
+iter 12080: loss 2.9564, time 11114.55ms, mfu 12.36%
+iter 12100: loss 3.0860, time 11113.64ms, mfu 12.42%
+iter 12120: loss 2.9589, time 11114.21ms, mfu 12.47%
+iter 12140: loss 2.9472, time 11098.59ms, mfu 12.51%
+iter 12160: loss 2.9874, time 11098.75ms, mfu 12.56%
+iter 12180: loss 3.3298, time 11100.90ms, mfu 12.60%
+iter 12200: loss 3.3380, time 11101.21ms, mfu 12.63%
+iter 12220: loss 3.3155, time 11098.80ms, mfu 12.66%
+iter 12240: loss 3.2676, time 11099.21ms, mfu 12.69%
+iter 12260: loss 3.1691, time 11098.63ms, mfu 12.71%
+iter 12280: loss 3.2843, time 11101.13ms, mfu 12.74%
+iter 12300: loss 3.1953, time 11098.32ms, mfu 12.76%
+iter 12320: loss 3.0588, time 11103.23ms, mfu 12.78%
+iter 12340: loss 3.2349, time 11098.89ms, mfu 12.79%
+iter 12360: loss 3.1397, time 11100.75ms, mfu 12.81%
+iter 12380: loss 3.2646, time 11101.05ms, mfu 12.82%
+iter 12400: loss 2.9053, time 11100.97ms, mfu 12.83%
+iter 12420: loss 3.1956, time 11098.25ms, mfu 12.84%
+iter 12440: loss 2.9153, time 11100.51ms, mfu 12.85%
+iter 12460: loss 3.0040, time 11102.41ms, mfu 12.86%
+iter 12480: loss 3.4319, time 11098.58ms, mfu 12.87%
+step 12500: train loss 3.0928, val loss 3.0590
+saving checkpoint to out-fineweb-gpt3
+iter 12500: loss 2.8811, time 29184.19ms, mfu 12.07%
+iter 12520: loss 2.7576, time 11114.01ms, mfu 12.16%
+iter 12540: loss 3.0644, time 11114.67ms, mfu 12.24%
+iter 12560: loss 3.0371, time 11113.71ms, mfu 12.30%
+iter 12580: loss 2.8350, time 11114.01ms, mfu 12.37%
+iter 12600: loss 3.2210, time 11113.44ms, mfu 12.42%
+iter 12620: loss 3.2200, time 11114.04ms, mfu 12.47%
+iter 12640: loss 3.2584, time 11114.49ms, mfu 12.52%
+iter 12660: loss 3.2628, time 11113.26ms, mfu 12.56%
+iter 12680: loss 3.0799, time 11114.15ms, mfu 12.59%
+iter 12700: loss 3.0593, time 11113.38ms, mfu 12.63%
+iter 12720: loss 2.9599, time 11113.68ms, mfu 12.66%
+iter 12740: loss 2.8519, time 11113.39ms, mfu 12.68%
+iter 12760: loss 3.5121, time 11113.88ms, mfu 12.71%
+iter 12780: loss 3.1774, time 11114.13ms, mfu 12.73%
+iter 12800: loss 2.9241, time 11113.53ms, mfu 12.75%
+iter 12820: loss 3.3957, time 11114.49ms, mfu 12.77%
+iter 12840: loss 3.0592, time 11114.12ms, mfu 12.78%
+iter 12860: loss 2.8706, time 11114.29ms, mfu 12.80%
+iter 12880: loss 2.9566, time 11114.68ms, mfu 12.81%
+iter 12900: loss 2.8843, time 11115.29ms, mfu 12.82%
+iter 12920: loss 3.3504, time 11115.28ms, mfu 12.83%
+iter 12940: loss 3.0532, time 11114.41ms, mfu 12.84%
+iter 12960: loss 3.1205, time 11114.79ms, mfu 12.85%
+iter 12980: loss 3.3298, time 11107.85ms, mfu 12.86%
+step 13000: train loss 3.1129, val loss 3.0347
+saving checkpoint to out-fineweb-gpt3
+iter 13000: loss 2.9767, time 28984.24ms, mfu 12.07%
+iter 13020: loss 3.0802, time 11111.08ms, mfu 12.15%
+iter 13040: loss 3.1907, time 11101.45ms, mfu 12.23%
+iter 13060: loss 3.1959, time 11101.25ms, mfu 12.30%
+iter 13080: loss 3.3444, time 11098.90ms, mfu 12.37%
+iter 13100: loss 3.1300, time 11099.48ms, mfu 12.42%
+iter 13120: loss 3.2898, time 11100.92ms, mfu 12.47%
+iter 13140: loss 2.9958, time 11100.68ms, mfu 12.52%
+iter 13160: loss 3.2168, time 11100.62ms, mfu 12.56%
+iter 13180: loss 3.0493, time 11098.74ms, mfu 12.60%
+iter 13200: loss 2.8795, time 11100.95ms, mfu 12.63%
+iter 13220: loss 2.9313, time 11099.00ms, mfu 12.67%
+iter 13240: loss 3.1579, time 11098.56ms, mfu 12.69%
+iter 13260: loss 3.1483, time 11100.44ms, mfu 12.72%
+iter 13280: loss 3.3032, time 11098.31ms, mfu 12.74%
+iter 13300: loss 2.9680, time 11103.04ms, mfu 12.76%
+iter 13320: loss 3.3896, time 11100.74ms, mfu 12.78%
+iter 13340: loss 3.2027, time 11100.82ms, mfu 12.79%
+iter 13360: loss 2.8901, time 11098.64ms, mfu 12.81%
+iter 13380: loss 2.9639, time 11100.21ms, mfu 12.82%
+iter 13400: loss 3.2136, time 11101.12ms, mfu 12.83%
+iter 13420: loss 3.1004, time 11100.83ms, mfu 12.84%
+iter 13440: loss 3.2893, time 11098.11ms, mfu 12.85%
+iter 13460: loss 3.0770, time 11099.39ms, mfu 12.86%
+iter 13480: loss 3.0905, time 11098.93ms, mfu 12.87%
+step 13500: train loss 3.0954, val loss 3.0611
+saving checkpoint to out-fineweb-gpt3
+iter 13500: loss 2.8659, time 29329.37ms, mfu 12.07%
+iter 13520: loss 2.9759, time 11113.32ms, mfu 12.16%
+iter 13540: loss 2.9797, time 11112.34ms, mfu 12.24%
+iter 13560: loss 2.8402, time 11112.14ms, mfu 12.30%
+iter 13580: loss 3.0379, time 11112.43ms, mfu 12.37%
+iter 13600: loss 3.0407, time 11113.26ms, mfu 12.42%
+iter 13620: loss 2.8818, time 11111.81ms, mfu 12.47%
+iter 13640: loss 2.9530, time 11113.31ms, mfu 12.52%
+iter 13660: loss 2.7543, time 11112.87ms, mfu 12.56%
+iter 13680: loss 2.6773, time 11113.23ms, mfu 12.60%
+iter 13700: loss 3.4819, time 11111.86ms, mfu 12.63%
+iter 13720: loss 2.7010, time 11113.61ms, mfu 12.66%
+iter 13740: loss 3.2278, time 11112.69ms, mfu 12.68%
+iter 13760: loss 3.6113, time 11113.20ms, mfu 12.71%
+iter 13780: loss 3.0802, time 11112.75ms, mfu 12.73%
+iter 13800: loss 3.2426, time 11114.66ms, mfu 12.75%
+iter 13820: loss 3.1517, time 11112.73ms, mfu 12.77%
+iter 13840: loss 3.4085, time 11112.36ms, mfu 12.78%
+iter 13860: loss 3.0265, time 11113.13ms, mfu 12.80%
+iter 13880: loss 2.9011, time 11113.52ms, mfu 12.81%
+iter 13900: loss 3.1851, time 11112.76ms, mfu 12.82%
+iter 13920: loss 3.0433, time 11112.78ms, mfu 12.83%
+iter 13940: loss 2.9464, time 11112.79ms, mfu 12.84%
+iter 13960: loss 3.0410, time 11113.04ms, mfu 12.85%
+iter 13980: loss 3.0436, time 11112.94ms, mfu 12.86%
+step 14000: train loss 3.0690, val loss 3.0119
+saving checkpoint to out-fineweb-gpt3
+iter 14000: loss 3.2848, time 29114.81ms, mfu 12.06%
+iter 14020: loss 3.2937, time 11113.49ms, mfu 12.15%
+iter 14040: loss 2.9319, time 11112.43ms, mfu 12.23%
+iter 14060: loss 2.8759, time 11111.01ms, mfu 12.30%
+iter 14080: loss 2.9621, time 11110.35ms, mfu 12.36%
+iter 14100: loss 3.0775, time 11112.86ms, mfu 12.42%
+iter 14120: loss 3.4383, time 11114.05ms, mfu 12.47%
+iter 14140: loss 2.7655, time 11112.35ms, mfu 12.51%
+iter 14160: loss 2.9958, time 11112.95ms, mfu 12.56%
+iter 14180: loss 3.0073, time 11111.82ms, mfu 12.59%
+iter 14200: loss 3.1092, time 11113.54ms, mfu 12.63%
+iter 14220: loss 3.2931, time 11110.95ms, mfu 12.66%
+iter 14240: loss 2.9918, time 11112.63ms, mfu 12.68%
+iter 14260: loss 3.2242, time 11112.87ms, mfu 12.71%
+iter 14280: loss 2.8189, time 11112.65ms, mfu 12.73%
+iter 14300: loss 3.1135, time 11112.16ms, mfu 12.75%
+iter 14320: loss 3.0713, time 11112.86ms, mfu 12.77%
+iter 14340: loss 3.2632, time 11111.04ms, mfu 12.78%
+iter 14360: loss 3.1756, time 11112.73ms, mfu 12.80%
+iter 14380: loss 3.2461, time 11111.11ms, mfu 12.81%
+iter 14400: loss 3.2642, time 11111.63ms, mfu 12.82%
+iter 14420: loss 2.5384, time 11113.25ms, mfu 12.83%
+iter 14440: loss 3.2448, time 11113.95ms, mfu 12.84%
+iter 14460: loss 3.1967, time 11113.68ms, mfu 12.85%
+iter 14480: loss 3.2603, time 11113.59ms, mfu 12.86%
+step 14500: train loss 3.0446, val loss 3.0300
+saving checkpoint to out-fineweb-gpt3
+iter 14500: loss 3.0404, time 29450.33ms, mfu 12.06%
+iter 14520: loss 3.2141, time 11113.77ms, mfu 12.15%
+iter 14540: loss 3.0045, time 11095.94ms, mfu 12.23%
+iter 14560: loss 2.9208, time 11099.93ms, mfu 12.30%
+iter 14580: loss 2.9823, time 11101.28ms, mfu 12.36%
+iter 14600: loss 3.1290, time 11098.88ms, mfu 12.42%
+iter 14620: loss 3.1169, time 11100.27ms, mfu 12.47%
+iter 14640: loss 3.0969, time 11098.36ms, mfu 12.52%
+iter 14660: loss 3.1517, time 11099.35ms, mfu 12.56%
+iter 14680: loss 2.9002, time 11114.30ms, mfu 12.60%
+iter 14700: loss 3.0575, time 11113.38ms, mfu 12.63%
+iter 14720: loss 3.2531, time 11112.93ms, mfu 12.66%
+iter 14740: loss 2.7947, time 11112.69ms, mfu 12.69%
+iter 14760: loss 3.0817, time 11113.53ms, mfu 12.71%
+iter 14780: loss 3.3735, time 11114.69ms, mfu 12.73%
+iter 14800: loss 2.9823, time 11111.81ms, mfu 12.75%
+iter 14820: loss 2.1231, time 11112.37ms, mfu 12.77%
+iter 14840: loss 3.6314, time 11113.11ms, mfu 12.78%
+iter 14860: loss 3.0625, time 11113.65ms, mfu 12.80%
+iter 14880: loss 3.0416, time 11114.09ms, mfu 12.81%
+iter 14900: loss 3.2704, time 11114.84ms, mfu 12.82%
+iter 14920: loss 3.2753, time 11108.64ms, mfu 12.83%
+iter 14940: loss 3.2883, time 11113.93ms, mfu 12.84%
+iter 14960: loss 2.8213, time 11113.72ms, mfu 12.85%

@@ -1,0 +1,108 @@
+Overriding config with config/train_fineweb_gpt3.py:
+out_dir = 'out-fineweb-gpt3'
+shard_dir = '/mnt/data/nanoGPT/data/fineweb/edu_fineweb100B'
+dataset = 'fineweb'
+
+eval_interval = 500
+eval_iters = 100
+log_interval = 20
+always_save_checkpoint = True
+
+wandb_log = False
+wandb_project = 'fineweb-gpt3'
+wandb_run_name = 'gpt2-124M-100B'
+
+# 524,288 tokens / step (4 * 1024 * 128) — micro-batch 4 fits a 12GB 4070
+batch_size = 4
+block_size = 1024
+gradient_accumulation_steps = 128
+
+# GPT-2 124M
+n_layer = 12
+n_head = 12
+n_embd = 768
+dropout = 0.0
+bias = False
+
+learning_rate = 6e-4
+min_lr = 6e-5
+warmup_iters = 715
+max_iters = 19073        # ~10B tokens; bump toward ~190k for full 100B
+lr_decay_iters = 19073
+weight_decay = 0.1
+beta2 = 0.95
+grad_clip = 1.0
+
+compile = True
+
+Overriding: compile = False
+Overriding: log_interval = 1
+Overriding: eval_interval = 10000
+Overriding: max_iters = 4
+Overriding: gradient_accumulation_steps = 8
+tokens per iteration will be: 32,768
+[shards] train=1407 val=1 from /mnt/data/nanoGPT/data/fineweb/edu_fineweb100B
+Initializing a new model from scratch
+defaulting to vocab_size of GPT-2 to 50304 (50257 rounded up for efficiency)
+number of parameters: 123.59M
+/mnt/data/nanoGPT/train.py:207: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler(enabled=(dtype == 'float16'))
+num decayed parameter tensors: 50, with 124,354,560 parameters
+num non-decayed parameter tensors: 25, with 19,200 parameters
+using fused AdamW: True
+[GPT] idx: (4, 1024) | tok_emb: (4, 1024, 768) | pos_emb: (1024, 768) | x after embed+drop: (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[Attn] x: (4, 1024, 768) | q,k,v: (4, 12, 1024, 64) (B, n_head, T, head_size)
+[MLP] in: (4, 1024, 768)
+[MLP] after c_fc (4x expand): (4, 1024, 3072)
+[MLP] after c_proj (back to n_embd): (4, 1024, 768)
+[GPT] x after transformer: (4, 1024, 768) | logits: (4, 1024, 50304)
+step 0: train loss 11.0040, val loss 11.0031
+iter 0: loss 11.0361, time 6479.69ms, mfu -100.00%
+iter 1: loss 10.9356, time 599.57ms, mfu -100.00%
+iter 2: loss 10.8533, time 700.34ms, mfu -100.00%
+iter 3: loss 10.7511, time 700.71ms, mfu -100.00%
+iter 4: loss 10.5559, time 701.20ms, mfu -100.00%
