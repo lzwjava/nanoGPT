@@ -13,3 +13,8 @@ env/
 venv/
 train_*.txt
 *.bin.tmp
+
+# Training outputs
+out-*/
+data/fineweb/
+progress.json
