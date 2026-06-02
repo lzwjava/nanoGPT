@@ -10,6 +10,41 @@
 
 ---
 
+## What's added (by @lzwjava)
+
+This fork extends nanoGPT with additional dataset pipelines, scaled training configs, and inline shape annotations for learning. 45 commits, Nov 2025 – Apr 2026.
+
+### New dataset pipelines
+
+| Dataset | Path | Description |
+|---------|------|-------------|
+| FineWeb-Edu | `data/fineweb/` | Prepare scripts for HuggingFace FineWeb-Edu (10B+ tokens). Supports shard-based loading, chunked processing (`--max-chunks`), and incremental train/val splits. |
+| OpenWebText 10k | `data/openwebtext_10k/` | Quick 10k-subset extraction for fast iteration. |
+| Wikipedia Local | `data/wikipedia_local/` | Tokenize a local plain-text dump directly (no HuggingFace download). |
+
+### Training configs (new)
+
+| Config | Target | Notes |
+|--------|--------|-------|
+| `train_fineweb.py` | 125M on FineWeb | Tuned for RTX 4070 12 GB (n_embd=384, dropout=0.1). |
+| `train_fineweb1_5b.py` | 1.5B on FineWeb | For H200 80 GB. |
+| `train_fineweb_gpt3.py` | GPT-3 style 10B tokens | Shard-based loader, wider schedule. |
+| `train_fineweb_760m.py` | 760M on FineWeb | For MI300X 192 GB HBM3. |
+| `train_gpt2_200m.py` | GPT-2 200M | General-purpose mid-size config. |
+| `train_gpt2_200m_smoke.py` | Smoke test | Quick 200M sanity check (~few min). |
+| `train_fineweb_test.py` | Fast iteration | Small run for pipeline validation. |
+| `train_wikipedia.py` | Wikipedia local | Config for local text dumps. |
+
+### Model changes
+
+- **Inline tensor shape comments** throughout `model.py` forward passes (CausalSelfAttention, MLP, GPT) — shows exact shapes at every step with concrete GPT-2 XL examples, e.g. `# x: (B, T, C) e.g. (1, 5, 1600)`. Useful for understanding the transformer data flow.
+
+### Other
+
+- `.gitignore` updated for log files and new dataset directories.
+
+---
+
 The simplest, fastest repository for training/finetuning medium-sized GPTs. It is a rewrite of [minGPT](https://github.com/karpathy/minGPT) that prioritizes teeth over education. Still under active development, but currently the file `train.py` reproduces GPT-2 (124M) on OpenWebText, running on a single 8XA100 40GB node in about 4 days of training. The code itself is plain and readable: `train.py` is a ~300-line boilerplate training loop and `model.py` a ~300-line GPT model definition, which can optionally load the GPT-2 weights from OpenAI. That's it.
 
 ![repro124m](assets/gpt2_124M_loss.png)
