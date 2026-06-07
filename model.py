@@ -41,7 +41,6 @@ class CausalSelfAttention(nn.Module):
         self.n_head = config.n_head
         self.n_embd = config.n_embd
         self.dropout = config.dropout
-        self._shapes_logged = False
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
         self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
         if not self.flash:
@@ -62,9 +61,6 @@ class CausalSelfAttention(nn.Module):
         q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
 
-        if not self._shapes_logged:
-            print(f"[Attn] x: (B, T, C) → {tuple(x.shape)} | q,k,v: (B, nh, T, hs) → {tuple(q.shape)}")
-            self._shapes_logged = True
 
         # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
         if self.flash:
@@ -93,20 +89,12 @@ class MLP(nn.Module):
         self.gelu    = nn.GELU()
         self.c_proj  = nn.Linear(4 * config.n_embd, config.n_embd, bias=config.bias)
         self.dropout = nn.Dropout(config.dropout)
-        self._shapes_logged = False
 
     def forward(self, x):
         # x: (B, T, n_embd); e.g. (1, 5, 1600)
-        if not self._shapes_logged:
-            print(f"[MLP] in: (B, T, C) → {tuple(x.shape)}")
         x = self.c_fc(x) # (B, T, n_embd) -> (B, T, 4*n_embd); e.g. (1, 5, 6400)
-        if not self._shapes_logged:
-            print(f"[MLP] after c_fc (4x expand): (B, T, 4*C) → {tuple(x.shape)}")
         x = self.gelu(x) # same shape
         x = self.c_proj(x) # (B, T, 4*n_embd) -> (B, T, n_embd); e.g. (1, 5, 1600)
-        if not self._shapes_logged:
-            print(f"[MLP] after c_proj (back to n_embd): (B, T, C) → {tuple(x.shape)}")
-            self._shapes_logged = True
         x = self.dropout(x)
         return x
 
@@ -163,7 +151,6 @@ class GPT(nn.Module):
             if pn.endswith('c_proj.weight'):
                 torch.nn.init.normal_(p, mean=0.0, std=0.02/math.sqrt(2 * config.n_layer))
 
-        self._forward_logged = False
         # report number of parameters
         print("number of parameters: %.2fM" % (self.get_num_params()/1e6,))
 
@@ -199,9 +186,6 @@ class GPT(nn.Module):
         pos_emb = self.transformer.wpe(pos) # position embeddings of shape (t, n_embd); e.g. (5, 1600), broadcast over batch
         x = self.transformer.drop(tok_emb + pos_emb) # (b, t, n_embd); e.g. (1, 5, 1600)
 
-        if not self._forward_logged:
-            print(f"[GPT] idx: (B, T) → {tuple(idx.shape)} | tok_emb: (B, T, C) → {tuple(tok_emb.shape)} | pos_emb: (T, C) → {tuple(pos_emb.shape)} | x after embed+drop: (B, T, C) → {tuple(x.shape)}")
-
         for block in self.transformer.h:
             x = block(x) # (b, t, n_embd) -> (b, t, n_embd) at every layer
         x = self.transformer.ln_f(x) # (b, t, n_embd)
@@ -215,10 +199,6 @@ class GPT(nn.Module):
             # x[:, [-1], :]: (b, 1, n_embd) -> logits: (b, 1, vocab_size); e.g. (1, 1, 50257)
             logits = self.lm_head(x[:, [-1], :]) # note: using list [-1] to preserve the time dim
             loss = None
-
-        if not self._forward_logged:
-            print(f"[GPT] x after transformer: (B, T, C) → {tuple(x.shape)} | logits: (B, 1, V) → {tuple(logits.shape)}")
-            self._forward_logged = True
 
         return logits, loss
 
