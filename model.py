@@ -51,38 +51,54 @@ class CausalSelfAttention(nn.Module):
                                         .view(1, 1, config.block_size, config.block_size))
 
     def forward(self, x):
-        # x: (B, T, C) e.g. (1, 5, 1600) for GPT-2 XL
-        B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
+        _log = lambda tag, t: print(f"  {tag}: {tuple(t.shape)}") if not self._shapes_logged else None
 
-        # calculate query, key, values for all heads in batch and move head forward to be the batch dim
-        # c_attn(x): (B, T, 3*C) -> split into 3 of (B, T, C); e.g. each (1, 5, 1600)
-        q, k, v  = self.c_attn(x).split(self.n_embd, dim=2)
-        # view: (B, T, nh, hs) -> transpose: (B, nh, T, hs); e.g. (1, 25, 5, 64)
-        k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
-        q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
-        v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
+        # x: (B, T, C) e.g. (1, 5, 768) for GPT-2
+        B, T, C = x.size()
+        _log("x (B,T,C)", x)
+
+        # c_attn(x): (B, T, 3*C) -> split into 3 of (B, T, C)
+        q, k, v = self.c_attn(x).split(self.n_embd, dim=2)
+        _log("q after split (B,T,C)", q)
+        _log("k after split (B,T,C)", k)
+        _log("v after split (B,T,C)", v)
+
+        # view+transpose: (B, T, nh, hs) -> (B, nh, T, hs)
+        k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        _log("k after view+transpose (B,nh,T,hs)", k)
+        q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        _log("q after view+transpose (B,nh,T,hs)", q)
+        v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        _log("v after view+transpose (B,nh,T,hs)", v)
+
+        # causal self-attention: (B,nh,T,hs) x (B,nh,hs,T) -> (B,nh,T,T)
+        if self.flash:
+            y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=self.dropout if self.training else 0, is_causal=True)
+            _log("y after flash_attn (B,nh,T,hs)", y)
+        else:
+            att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
+            _log("att = q@k^T / sqrt(d) (B,nh,T,T)", att)
+            att = att.masked_fill(self.bias[:,:,:T,:T] == 0, float('-inf'))
+            _log("att after mask (B,nh,T,T)", att)
+            att = F.softmax(att, dim=-1)
+            _log("att after softmax (B,nh,T,T)", att)
+            att = self.attn_dropout(att)
+            _log("att after dropout (B,nh,T,T)", att)
+            y = att @ v
+            _log("y = att@v (B,nh,T,hs)", y)
+
+        # re-assemble heads: (B, nh, T, hs) -> (B, T, C)
+        y = y.transpose(1, 2).contiguous().view(B, T, C)
+        _log("y after concat heads (B,T,C)", y)
+
+        # output projection
+        y = self.c_proj(y)
+        _log("y after c_proj (B,T,C)", y)
+        y = self.resid_dropout(y)
+        _log("y after dropout (B,T,C)", y)
 
         if not self._shapes_logged:
-            print(f"[Attn] x: (B, T, C) → {tuple(x.shape)} | q,k,v: (B, nh, T, hs) → {tuple(q.shape)}")
             self._shapes_logged = True
-
-        # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
-        if self.flash:
-            # efficient attention using Flash Attention CUDA kernels
-            # y: (B, nh, T, hs); e.g. (1, 25, 5, 64)
-            y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=self.dropout if self.training else 0, is_causal=True)
-        else:
-            # manual implementation of attention
-            att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1))) # (B, nh, T, T)
-            att = att.masked_fill(self.bias[:,:,:T,:T] == 0, float('-inf'))
-            att = F.softmax(att, dim=-1)
-            att = self.attn_dropout(att)
-            y = att @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
-        # transpose: (B, T, nh, hs) -> view: (B, T, C); e.g. (1, 5, 1600)
-        y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
-
-        # output projection: (B, T, C) -> (B, T, C)
-        y = self.resid_dropout(self.c_proj(y))
         return y
 
 class MLP(nn.Module):
