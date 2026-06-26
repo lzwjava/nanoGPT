@@ -117,7 +117,11 @@ data_dir = os.path.join('data', dataset)
 shard_dir = globals().get('shard_dir', None)
 if shard_dir is not None:
     _train_shards = sorted(_glob.glob(os.path.join(shard_dir, 'edufineweb_train_*.npy')))
+    if not _train_shards:
+        _train_shards = sorted(_glob.glob(os.path.join(shard_dir, 'train_*.npy')))
     _val_shards = sorted(_glob.glob(os.path.join(shard_dir, 'edufineweb_val_*.npy')))
+    if not _val_shards:
+        _val_shards = sorted(_glob.glob(os.path.join(shard_dir, 'val_*.npy')))
     assert _train_shards and _val_shards, f"no shards in {shard_dir}"
     print(f"[shards] train={len(_train_shards)} val={len(_val_shards)} from {shard_dir}")
 def get_batch(split):
