@@ -1,0 +1,258 @@
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, timedelta
+import os
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET', 'super-secret-change-me')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+
+db = SQLAlchemy(app)
+jwt = JWTManager(app)
+
+# ─── Models ───────────────────────────────────────────────────────────────────
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    posts = db.relationship('Post', backref='author', lazy=True)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'created_at': self.created_at.isoformat(),
+            'post_count': len(self.posts)
+        }
+
+
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    tags = db.relationship('Tag', secondary='post_tags', backref='posts')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'body': self.body,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+            'author': self.author.username,
+            'tags': [t.name for t in self.tags]
+        }
+
+
+class Tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+
+post_tags = db.Table('post_tags',
+    db.Column('post_id', db.Integer, db.ForeignKey('post.id'), primary_key=True),
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), primary_key=True)
+)
+
+
+# ─── Auth Routes ──────────────────────────────────────────────────────────────
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    if not data or not all(k in data for k in ('username', 'email', 'password')):
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    if User.query.filter_by(username=data['username']).first():
+        return jsonify({'error': 'Username already taken'}), 409
+
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify({'error': 'Email already registered'}), 409
+
+    user = User(username=data['username'], email=data['email'])
+    user.set_password(data['password'])
+    db.session.add(user)
+    db.session.commit()
+
+    token = create_access_token(identity=user.id)
+    return jsonify({'user': user.to_dict(), 'token': token}), 201
+
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    if not data or not all(k in data for k in ('username', 'password')):
+        return jsonify({'error': 'Missing username or password'}), 400
+
+    user = User.query.filter_by(username=data['username']).first()
+    if not user or not user.check_password(data['password']):
+        return jsonify({'error': 'Invalid credentials'}), 401
+
+    token = create_access_token(identity=user.id)
+    return jsonify({'user': user.to_dict(), 'token': token}), 200
+
+
+# ─── Post Routes ──────────────────────────────────────────────────────────────
+
+@app.route('/api/posts', methods=['GET'])
+def get_posts():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    tag = request.args.get('tag')
+
+    query = Post.query
+    if tag:
+        query = query.filter(Post.tags.any(Tag.name == tag))
+
+    pagination = query.order_by(Post.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    return jsonify({
+        'posts': [p.to_dict() for p in pagination.items],
+        'total': pagination.total,
+        'pages': pagination.pages,
+        'current_page': page
+    })
+
+
+@app.route('/api/posts', methods=['POST'])
+@jwt_required()
+def create_post():
+    data = request.get_json()
+    if not data or not all(k in data for k in ('title', 'body')):
+        return jsonify({'error': 'Title and body are required'}), 400
+
+    user_id = get_jwt_identity()
+    post = Post(title=data['title'], body=data['body'], user_id=user_id)
+
+    # Handle tags
+    if 'tags' in data:
+        for tag_name in data['tags']:
+            tag = Tag.query.filter_by(name=tag_name).first()
+            if not tag:
+                tag = Tag(name=tag_name)
+                db.session.add(tag)
+            post.tags.append(tag)
+
+    db.session.add(post)
+    db.session.commit()
+    return jsonify(post.to_dict()), 201
+
+
+@app.route('/api/posts/<int:post_id>', methods=['GET'])
+def get_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    return jsonify(post.to_dict())
+
+
+@app.route('/api/posts/<int:post_id>', methods=['PUT'])
+@jwt_required()
+def update_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    user_id = get_jwt_identity()
+
+    if post.user_id != user_id:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    data = request.get_json()
+    if 'title' in data:
+        post.title = data['title']
+    if 'body' in data:
+        post.body = data['body']
+    if 'tags' in data:
+        post.tags.clear()
+        for tag_name in data['tags']:
+            tag = Tag.query.filter_by(name=tag_name).first()
+            if not tag:
+                tag = Tag(name=tag_name)
+                db.session.add(tag)
+            post.tags.append(tag)
+
+    db.session.commit()
+    return jsonify(post.to_dict())
+
+
+@app.route('/api/posts/<int:post_id>', methods=['DELETE'])
+@jwt_required()
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    user_id = get_jwt_identity()
+
+    if post.user_id != user_id:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    db.session.delete(post)
+    db.session.commit()
+    return jsonify({'message': 'Post deleted'}), 200
+
+
+# ─── User Routes ──────────────────────────────────────────────────────────────
+
+@app.route('/api/users/me', methods=['GET'])
+@jwt_required()
+def get_current_user():
+    user_id = get_jwt_identity()
+    user = User.query.get_or_404(user_id)
+    return jsonify(user.to_dict())
+
+
+@app.route('/api/users/<int:user_id>/posts', methods=['GET'])
+def get_user_posts(user_id):
+    user = User.query.get_or_404(user_id)
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    pagination = Post.query.filter_by(user_id=user_id)\
+        .order_by(Post.created_at.desc())\
+        .paginate(page=page, per_page=per_page, error_out=False)
+
+    return jsonify({
+        'user': user.to_dict(),
+        'posts': [p.to_dict() for p in pagination.items],
+        'total': pagination.total,
+        'pages': pagination.pages
+    })
+
+
+# ─── Error Handlers ───────────────────────────────────────────────────────────
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'error': 'Resource not found'}), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return jsonify({'error': 'Internal server error'}), 500
+
+
+# ─── Initialize ───────────────────────────────────────────────────────────────
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True, port=5000)

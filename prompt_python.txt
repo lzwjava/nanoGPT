@@ -1,0 +1,151 @@
+import torch
+import torch.nn as nn
+from torch.nn import functional as F
+
+class MultiHeadAttention(nn.Module):
+    def __init__(self, n_embd, n_head, dropout=0.1):
+        super().__init__()
+        self.n_head = n_head
+        self.n_embd = n_embd
+        self.head_dim = n_embd // n_head
+        assert n_embd % n_head == 0, "n_embd must be divisible by n_head"
+
+        self.qkv = nn.Linear(n_embd, 3 * n_embd, bias=False)
+        self.proj = nn.Linear(n_embd, n_embd)
+        self.attn_drop = nn.Dropout(dropout)
+        self.resid_drop = nn.Dropout(dropout)
+
+    def forward(self, x):
+        B, T, C = x.size()
+        qkv = self.qkv(x).reshape(B, T, 3, self.n_head, self.head_dim)
+        q, k, v = qkv.permute(2, 0, 3, 1, 4).unbind(0)
+
+        att = (q @ k.transpose(-2, -1)) * (1.0 / self.head_dim**0.5)
+        att = F.softmax(att, dim=-1)
+        att = self.attn_drop(att)
+
+        y = att @ v
+        y = y.transpose(1, 2).contiguous().reshape(B, T, C)
+        y = self.resid_drop(self.proj(y))
+        return y
+
+
+class TransformerBlock(nn.Module):
+    def __init__(self, n_embd, n_head, dropout=0.1):
+        super().__init__()
+        self.ln1 = nn.LayerNorm(n_embd)
+        self.attn = MultiHeadAttention(n_embd, n_head, dropout)
+        self.ln2 = nn.LayerNorm(n_embd)
+        self.mlp = nn.Sequential(
+            nn.Linear(n_embd, 4 * n_embd),
+            nn.GELU(),
+            nn.Linear(4 * n_embd, n_embd),
+            nn.Dropout(dropout),
+        )
+
+    def forward(self, x):
+        x = x + self.attn(self.ln1(x))
+        x = x + self.mlp(self.ln2(x))
+        return x
+
+
+class MiniGPT(nn.Module):
+    def __init__(self, vocab_size, n_embd=256, n_head=4, n_layer=4, block_size=128, dropout=0.1):
+        super().__init__()
+        self.block_size = block_size
+        self.tok_emb = nn.Embedding(vocab_size, n_embd)
+        self.pos_emb = nn.Embedding(block_size, n_embd)
+        self.drop = nn.Dropout(dropout)
+
+        self.blocks = nn.Sequential(*[
+            TransformerBlock(n_embd, n_head, dropout) for _ in range(n_layer)
+        ])
+        self.ln_f = nn.LayerNorm(n_embd)
+        self.head = nn.Linear(n_embd, vocab_size, bias=False)
+
+    def forward(self, idx):
+        B, T = idx.size()
+        assert T <= self.block_size, f"Sequence length {T} exceeds block size {self.block_size}"
+
+        pos = torch.arange(0, T, device=idx.device).unsqueeze(0)
+        x = self.drop(self.tok_emb(idx) + self.pos_emb(pos))
+        x = self.blocks(x)
+        x = self.ln_f(x)
+        logits = self.head(x)
+        return logits
+
+    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
+        for _ in range(max_new_tokens):
+            idx_crop = idx[:, -self.block_size:]
+            logits = self(idx_crop)
+            logits = logits[:, -1, :] / temperature
+            if top_k is not None:
+                v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
+                logits[logits < v[:, [-1]]] = -float('Inf')
+            probs = F.softmax(logits, dim=-1)
+            idx_next = torch.multinomial(probs, num_samples=1)
+            idx = torch.cat((idx, idx_next), dim=1)
+        return idx
+
+
+def count_parameters(model):
+    """Count the number of trainable parameters in a model"""
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+
+if __name__ == "__main__":
+    model = MiniGPT(vocab_size=50257)
+    print(f"Parameters: {count_parameters(model):,}")
+
+    # Test forward pass
+    x = torch.randint(0, 50257, (2, 64))
+    logits = model(x)
+    print(f"Output shape: {logits.shape}")
+
+    # Test generation
+    prompt = torch.randint(0, 50257, (1, 10))
+    generated = model.generate(prompt, max_new_tokens=50, temperature=0.8, top_k=40)
+    print(f"Generated shape: {generated.shape}")
+
+    # Now let's add a training loop
+    def train_step(model, data, targets, optimizer):
+        model.train()
+        logits = model(data)
+        loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
+        optimizer.zero_grad()
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        optimizer.step()
+        return loss.item()
+
+    # Create dummy data for testing
+    batch_size = 4
+    seq_len = 128
+    dummy_data = torch.randint(0, 50257, (batch_size, seq_len))
+    dummy_targets = torch.randint(0, 50257, (batch_size, seq_len))
+
+    optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=0.1)
+
+    for step in range(5):
+        loss = train_step(model, dummy_data, dummy_targets, optimizer)
+        print(f"Step {step}: loss = {loss:.4f}")
+
+    # Save model checkpoint
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'config': {
+            'vocab_size': 50257,
+            'n_embd': 256,
+            'n_head': 4,
+            'n_layer': 4,
+            'block_size': 128,
+        }
+    }, 'minigpt_checkpoint.pt')
+    print("Checkpoint saved!")
+
+    # Load and verify
+    checkpoint = torch.load('minigpt_checkpoint.pt')
+    model2 = MiniGPT(**checkpoint['config'])
+    model2.load_state_dict(checkpoint['model_state_dict'])
+    print("Model loaded successfully!")
