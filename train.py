@@ -72,6 +72,7 @@ backend = 'nccl' # 'nccl', 'gloo', etc.
 device = 'cuda' # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1' etc., or try 'mps' on macbooks
 dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16' # 'float32', 'bfloat16', or 'float16', the latter will auto implement a GradScaler
 compile = True # use PyTorch 2.0 to compile the model to be faster
+compile_mode = 'default' # 'default', 'reduce-overhead' (cudagraphs), 'max-autotune-no-cudagraphs', ...
 # -----------------------------------------------------------------------------
 config_keys = [k for k,v in globals().items() if not k.startswith('_') and isinstance(v, (int, float, bool, str))]
 exec(open('configurator.py').read()) # overrides from command line or config file
@@ -219,8 +220,17 @@ checkpoint = None # free up memory
 # compile the model
 if compile:
     print("compiling the model... (takes a ~minute)")
+    # Workaround for consumer GPUs (RTX 4070 = 46 SMs < inductor's 68-SM
+    # "big GPU" cutoff): inductor otherwise skips its fast Triton GEMM
+    # templates and every matmul runs on slow generic reduction kernels.
+    # Force the templates on; harmless on big GPUs.
+    try:
+        import torch._inductor.utils as _inductor_utils
+        _inductor_utils.is_big_gpu = lambda *a, **k: True
+    except Exception:
+        pass
     unoptimized_model = model
-    model = torch.compile(model) # requires PyTorch 2.0
+    model = torch.compile(model, mode=compile_mode) # requires PyTorch 2.0
 
 # wrap model into DDP container
 if ddp:
@@ -311,6 +321,12 @@ while True:
             # I really dislike that this bloats the code and forces us to repeat code
             # looking at the source of that context manager, it just toggles this variable
             model.require_backward_grad_sync = (micro_step == gradient_accumulation_steps - 1)
+        # with cudagraphs (compile_mode='reduce-overhead') the compiled forward
+        # reuses static output buffers; with grad accumulation each micro-step must
+        # be marked as a new step or the next forward overwrites the loss tensor
+        # before this step's backward reads it.
+        if compile_mode == 'reduce-overhead':
+            torch.compiler.cudagraph_mark_step_begin()
         with ctx:
             logits, loss = model(X, Y)
             loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation

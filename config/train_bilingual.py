@@ -52,3 +52,12 @@ beta2 = 0.95
 grad_clip = 1.0
 
 compile = True
+# 'default' = no cudagraphs (torch 2.10 cudagraphs crash on this tied-embedding
+# + grad-accum model: "accessing tensor output of CUDAGraphs that has been
+# overwritten"). Templates from the is_big_gpu patch are still used, which is
+# the main win. Try 'max-autotune-no-cudagraphs' for autotuned template configs.
+compile_mode = 'default'
+
+# Optional follow-up (same 524,288 tok/iter, bigger GEMMs):
+#   batch_size = 8
+#   gradient_accumulation_steps = 64
